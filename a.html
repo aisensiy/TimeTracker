@@ -1,22 +1,111 @@
 <html>
 	<head>
 		<title>a</title>
+		<link type="text/css" rel="stylesheet" href="css/popup.css" />
+		<script type="text/javascript" src="js/jquery.js"></script>
 		<script type="text/javascript" src="js/background.js"></script>
-	</head>
-	<body>
 		<script type="text/javascript">
-			function getSecFromFormat(ss) {
-				var pattern = /(\d+d)?(\d+h)?(\d+m)?(\d+s)/,
-				rights = [24*60*60, 60*60, 60, 1],
-				secs = 0;
-				var match = pattern.exec(ss);
-				for(var i=1; i<5; i++)
-					secs += match[i] != undefined ? parseInt(match[i])*rights[i-1] : 0;
-				return secs;
+			function fillGroupList() {
+				var groups = [];
+				for(var g in window.group)
+					groups.push(g);
+				groups.sort();
+				for(var i=0; i<groups.length; i++) {
+					var val = groups[i];
+					$("ul.template.groups-list").children().clone().appendTo('#groups')
+					.find('input[type=text]').val(val).data('oldname', val);
+				}
 			}
 
-			alert(getSecFromFormat('11m23s'));
-			alert(Date.getyesterday());
+			$( function() {
+				//destoryGroup();
+				initGroup();
+				fillGroupList();
+				$('[name="createbtn"]').click( function(event) {
+					var val = $("[name='groupname']").val();
+					if(val && createGroup(val)) {
+						$("ul.template.groups-list").children().clone().appendTo('#groups')
+						.find('input[type=text]').val(val).data('oldname', val);
+					} else if(!createGroup(val)) {
+						alert('group ' + val + ' exists');
+					}
+				});
+				$('button.delete').live('click', function() {
+					var unit = $(this).closest('li');
+					var name = unit.find('[type=text]').val();
+					unit.remove();
+					deleteGroup(name);
+				});
+				$('button.rename').live('click', function() {
+					var oldname = $(this).prev('[type=text]').data('oldname');
+					var newname = $(this).prev('[type=text]').val();
+					renameGroup(oldname, newname);
+					$(this).prev('[type=text]').data('oldname', newname);
+				});
+			});
+		</script>
+	</head>
+	<body>
+		<div id="group">
+			<div>
+				<input type="text" id="groupname" name="groupname" />
+				<input type="button" name="createbtn" value="Create Group" />
+			</div>
+			<ul id="groups">
+			</ul>
+		</div>
+		<div id="domain-list">
+			<select name="time">
+				<option value="today">today</option>
+				<option value="yesterday">yesterday</option>
+				<option value="thisweek">thisweek</option>
+				<option value="lastweek">lastweek</option>
+			</select>
+		</div>
+		<ul class='template groups-list'>
+			<li>
+				<input type="text" name="groupname" />
+				<button type="button" class='rename'>
+					rename
+				</button>
+				<button type="button" class='delete'>
+					X
+				</button>
+			</li>
+		</ul>
+		<script type="text/javascript">
+			/*function getSecFromFormat(ss) {
+			 var pattern = /(\d+d)?(\d+h)?(\d+m)?(\d+s)/,
+			 rights = [24*60*60, 60*60, 60, 1],
+			 secs = 0;
+			 var match = pattern.exec(ss);
+			 for(var i=1; i<5; i++)
+			 secs += match[i] != undefined ? parseInt(match[i])*rights[i-1] : 0;
+			 return secs;
+			 }
+
+			 alert(getSecFromFormat('11m23s'));
+			 alert(Date.getyesterday());*/
+			/*
+			 destoryGroup();
+			 initGroup();
+			 alert(localStorage.time_tracker_group);
+			 createGroup('work');
+			 alert(localStorage.time_tracker_group);
+			 createGroup('weibo');
+			 alert(localStorage.time_tracker_group);
+			 addDomainToGroup('http://weibo.com', 'weibo');
+			 alert(localStorage.time_tracker_group);
+			 addDomainToGroup('http://www.douban.com', 'weibo');
+			 alert(localStorage.time_tracker_group);
+			 deleteGroup('work');
+			 alert(localStorage.time_tracker_group);
+			 deleteDomainFromGroup('http://weibo.com', 'weibo');
+			 alert(localStorage.time_tracker_group);
+			 renameGroup('weibo', 't');
+			 alert(localStorage.time_tracker_group);
+			 */
+			alert(Date.lastweek());
 		</script>
 	</body>
 </html>

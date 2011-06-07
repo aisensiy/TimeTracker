@@ -19,6 +19,8 @@ function formattime(secs) {
 /**
  * reverse of formattime
  * from xdxhxmxs => xxx seconds
+ * @param {string} ss the xdxhxmxs format time
+ * @return {number} seconds
  */
 function getSecFromFormat(ss) {
 	var pattern = /(\d+d)?(\d+h)?(\d+m)?(\d+s)/,
@@ -60,6 +62,7 @@ function createtbody(obj, param) {
 	tb.appendChild(total);
 	return tb;
 }
+
 function getTotal(obj, param) {
 	param = param || 'totalTime';
 	var total = 0;

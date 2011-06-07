@@ -63,3 +63,7 @@ tr.head {
 .dataTables_info {
 	font-size: 0.8em;
 }
+
+.template {
+	display: none;
+}

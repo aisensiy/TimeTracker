@@ -3,5 +3,10 @@
 
 plan:
 1. create the core datastructure:
-domains:
-	
+domains: object
+	totalTime: number
+	daily: object
+		date: number
+group: object
+	groupname: array
+		url: string
