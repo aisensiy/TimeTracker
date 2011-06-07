@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>meetimer</title>
+		<link href="css/popup.css" rel="stylesheet" type="text/css" />
+		<script type="text/javascript" src="js/global.js"></script>
+		<script type="text/javascript" src="js/popup.js"></script>
+		<script type="text/javascript" src="js/jquery.js"></script>
+		<script type="text/javascript" src="js/jquery.dataTables.min.js"></script>
+		<script type="text/javascript">
+			jQuery.fn.dataTableExt.oSort['time-case-asc']  = function(x,y) {
+				x = getSecFromFormat(x), y = getSecFromFormat(y);
+				return ((x < y) ? -1 : ((x > y) ?  1 : 0));
+			};
+			jQuery.fn.dataTableExt.oSort['time-case-desc'] = function(x,y) {
+				x = getSecFromFormat(x), y = getSecFromFormat(y);
+				return ((x < y) ?  1 : ((x > y) ? -1 : 0));
+			};
+			$( function() {
+				
+				var obj = JSON.parse(localStorage[window.root]);
+				$("#wrapper").append(createtable(obj));
+				$("#data").dataTable({
+					"aaSorting": [[ 1, "desc" ]],
+					"aoColumns": [null, {"sType":"time-case"}]
+					});
+			});
+		</script>
+	</head>
+	<body>
+		<ul id="menu">
+			<li><a href="#" id="total">total</a></li>
+			<li><a href="#" id="today">today</a></li>
+			<li><a href="#" id="yesterday">yesterday</a></li>
+		</ul>
+		<div id='wrapper'>
+			
+		</div>
+	</body>
+</html>

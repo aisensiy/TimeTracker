@@ -1,0 +1,65 @@
+body {
+	min-width: 400px;
+}
+#menu {
+	margin: 0;
+	padding: 0;
+	float: left;
+	width: 80px;
+	text-align: right;
+	list-style: none;
+}
+#wrapper {
+	margin-left: 90px;
+}
+#data {
+	clear: both;
+	width: 100%;
+	border-collapse: collapse;
+	border-bottom: 1px solid black;
+}
+table, tbody, thead, tr, th, td {
+	margin: 0;
+	padding: 0;
+}
+th, td {
+	text-align: center;
+	padding: 0.1em 1em;
+}
+th {
+	border-bottom: 1px solid black;
+}
+td.time {
+	text-align: right;
+}
+td.name {
+	font-size: 0.8em;
+}
+td {
+	text-align: left;
+}
+th {
+	cursor: pointer;
+}
+tr:nth-child(even) {
+	background-color: #ddf;
+}
+tr:nth-child(odd) {
+	background-color: #eef;
+}
+tr.head {
+	background-color: #fff;
+}
+.dataTables_wrapper {
+	position: relative;
+}
+
+.dataTables_length {
+	font-size: 0.8em;
+}
+.dataTables_filter {
+	font-size: 0.8em;
+}
+.dataTables_info {
+	font-size: 0.8em;
+}

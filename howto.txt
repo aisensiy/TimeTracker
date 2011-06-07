@@ -1,0 +1,7 @@
+1. how to get the active tab
+2. how to storage data
+
+plan:
+1. create the core datastructure:
+domains:
+	

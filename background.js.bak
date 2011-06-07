@@ -1,0 +1,246 @@
+// var wndid = chrome.windows.
+// var root = 'time_tracker_ext';
+// var domainarray = 'time_domains';
+// var domainmap = "domains";
+//
+// function init() {
+// if(!localStorage[root]) {
+// var obj = {
+// domainarray: [],
+// domainmap: {}
+// };
+// localStorage[root] = JSON.stringify(obj);
+// }
+// }
+//
+// function destory() {
+// if(localStorage[root])
+// localStorage.removeItem(root);
+// }
+//
+// //--add domain to the local storage
+// /*
+// * if add return true, if existe return false;
+// */
+// function addDomains(domain) {
+// var domains = JSON.parse(localStorage[root]);
+// if(!isDomainExists(domain, domains)) {
+// domains[domainarray].push(domain);
+// domains[domainmap][domain] = {
+// "totalTime": 0.0,
+// "daily": {}
+// };
+// localStorage[root] = JSON.stringify(domains);
+// return true;
+// } else
+// return false;
+// }
+//
+// function isDomainExists(domain, domains) {
+// for(var i=0; i<domains.length; i++)
+// if(domains[i] == domain)
+// return true;
+// return false;
+// }
+//
+// function removeDomain(domain) {
+// var obj = JSON.parse(localStorage[root]);
+// var domains = obj[domainarray];
+// for(var i=0; i<domains.length; i++)
+// if(domains[i] == domain) {
+// domains.splice(i, 1);
+// delete obj[domainmap][domain];
+// localStorage[root] = JSON.stringify(obj);
+// return true;
+// }
+// return false;
+// }
+//
+// /*
+// * 1. 检查是否已经存在，如果不存在这个domain则创建
+// * 2. 如果已经有开始时间则退出，否则设置开始时间
+// */
+// function starttimer(domain) {
+// if(!localStorage[domain])
+// localStorage[domain] = JSON.stringify({
+// "totalTime": 0.0,
+// "daily": {},
+// "start": (new Date()).getTime()
+// });
+// else {
+// var domain = JSON.parse(localStorage[domain]);
+// if(domain['start'])
+// return;
+// domain['start'] = (new Date()).getTime();
+// localStorage[domain] = JSON.stringify(domain);
+// }
+// }
+//
+// // Date.date2str = function(date) {
+// // var str = "";
+// // str+=date.getFullYear()+"-" + date.getMonth() + "-" + date.getDate() + " ";
+// // str+=date.getHours() + ":" + date.getMinutes();
+// // return str;
+// // };
+// // Date.str2date = function(str) {
+// // var date = new Date();
+// // var dates = str.split(" ")[0].split("-");
+// // date.setFullYear(parseInt(dates[0]));
+// // date.setMonth(parseInt(dates[1]));
+// // date.setDate(parseInt(dates[2]));
+// // var times = str.split(" ")[1].split(":");
+// // date.setHours(times[0]);
+// // date.setMinutes(times[1]);
+// // date.setSeconds(0);
+// // return date;
+// // };
+// Date.date2str = function(date) {
+// var str = "";
+// str+=date.getFullYear()+"-" + date.getMonth() + "-" + date.getDate() + " ";
+// return str;
+// };
+// Date.str2date = function(str) {
+// var date = new Date();
+// var dates = str.split(" ");
+// date.setFullYear(parseInt(dates[0]));
+// date.setMonth(parseInt(dates[1]));
+// date.setDate(parseInt(dates[2]));
+// return date;
+// };
+// /*
+// *  1.如果找不到这个domain则退出
+// *  2.读取开始时间，如果差值为负，退出，否则将差值加入今日统计
+// *  3.
+// */
+// function stoptimer(domain) {
+// if(!localStorage[domain])
+// return;
+// var obj = JSON.parse(localStorage[domain]);
+// if(!obj.start)
+// return;
+// var now = new Date();
+// var secs = Math.round((now.getTime() - domain.start) / 1000.0);
+// obj.start = undefined;
+// if(secs < 0) {
+// return;
+// }
+// obj["daily"][Date.date2str(now)] =
+// obj["daily"][Date.date2str(now)] ? obj["daily"][Date.date2str(now)]+secs : secs;
+// localStorage[domain] = JSON.stringify(obj);
+// }
+//
+function secs2format(sec) {
+	return {
+		'd':parseInt(secs/60/24/60),
+		'h':parseInt(secs/60 % (24*60) / 60),
+		'm':parseInt(secs/60 % (60*24) % 60),
+		's':parseInt(secs % 60)
+	};
+}
+
+//
+function getDomain(url) {
+	var i1 = url.indexOf(':');
+	for(var i=i1+1; url[i]=='/'; i++);
+	var end = url.indexOf('/', i);
+	return url.substring(0, end);
+}
+
+//localStorage.clear();
+
+// chrome.tabs.getSelected(null, function(tab) {
+//
+// });
+localStorage['str'] = '';
+// chrome.tabs.getSelected(null, function(tab) {
+// str = localStorage['str'];
+// str += "<p>When selected: " + tab.url + " " + (new Date()).toString() + "</p>";
+// localStorage['str'] = str;
+// });
+// chrome.tabs.onSelectionChanged.addListener( function(tabId) {
+// chrome.tabs.get(tabId, function(tab) {
+// str = localStorage['str'];
+// str += "<p>When selected changed: " + tab.url + " " + (new Date()).toString() + "</p>";
+// localStorage['str'] = str;
+// });
+// });
+// chrome.tabs.onCreated.addListener( function(tab) {
+// str = localStorage['str'];
+// str += "<p>When created: " + tab.url + " " + (new Date()).toString() + "</p>";
+// localStorage['str'] = str;
+// });
+// chrome.tabs.onUpdated.addListener( function(tabId, chinfo, tab) {
+// str = localStorage['str'];
+// str += "<p>When updated: " + tab.url + " " + (new Date()).toString() + "</p>";
+// localStorage['str'] = str;
+// });
+// chrome.tabs.onRemoved.addListener( function(tabId, removeInfo) {
+// str = localStorage['str'];
+// str += "<p>When removed: " + tab.url + " " + (new Date()).toString() + "</p>";
+// localStorage['str'] = str;
+// });
+// chrome.windows.onFocusChanged.addListener( function(windowId) {
+// var str = localStorage['str'];
+// // if(chrome.windows.WINDOW_ID_NONE)
+// // str += "<p>When lost focus: " + (new Date()).toString() + "</p>";
+// // else
+// // str += "<p>When get focus: " + (new Date()).toString() + "</p>";
+// chrome.windows.getLastFocused( function(wnd) {
+// var str = localStorage['str'];
+// if(wnd.focused)
+// str += '<p> get the focus at ' + (new Date()).toString() + '</p>';
+// else
+// str += '<p>lost the focus at ' + (new Date()).toString() + '</p>';
+// localStorage['str'] = str;
+// });
+// str += '<p>WINDOW_ID_NONE: ' + chrome.windows.WINDOW_ID_NONE + (new Date()).toString() + '</p>';
+// localStorage['str'] = str;
+// });
+function checkChromeActive() {
+	chrome.tabs.getSelected(null, function(tab) {
+		chrome.windows.getLastFocused( function(wnd) {
+			window.oldFocus = window.focus;
+			window.focus = wnd.focused ? true : false;
+		});
+		// var oldwndid = window.windowId;
+		// var oldtabid = window.tabId;
+		// window.windowId = tab.windowId;
+		// window.tabId = tab.id;
+		window.oldurl = window.url;
+		window.url = getDomain(tab.url);
+		returnstaus();
+	});
+}
+
+setInterval(checkChromeActive, 1000);
+// function returnlog(wndid, tabid, isfocus) {
+// var focus = isfocus ? 'get' : 'lost';
+// return focus + ' focus at ' + (new Date()).toString() + ' windowId: ' + wndid + ' tabid: ' + tabid + '</p>';
+// }
+function returnstaus() {
+	var ourl = window.oldurl,
+	nurl = window.url,
+	of = window.oldFocus,
+	nf = window.focus;
+	var str = localStorage['str'];
+	if(!of && nf)
+		str += start(nurl);
+	else if(of && !nf && ourl)
+		str += stop(ourl);
+	else if(of && nf) {
+		if(ourl != nurl) {
+			if(ourl)
+				str += stop(ourl);
+			str += start(nurl);
+		}
+	}
+	localStorage['str'] = str;
+}
+
+function start(url, str) {
+	return '<p>start: ' + url + '</p>';
+}
+
+function stop(url, str) {
+	return '<p>stop: ' + url + '</p>';
+}
