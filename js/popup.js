@@ -55,7 +55,7 @@ function createthead(array) {
 
 function createtbody(obj, param) {
 	var tb = document.createElement('tbody');
-	for(o in obj[domainmap])
+	for(var o in obj[domainmap])
 		tb.appendChild(createtr(obj[domainmap][o], o, param));
 	var total = document.createElement('tr');
 	total.innerHTML = '<td class="name">Total</td><td class="time">' + formattime(getTotal(obj, param)) + '</td>';

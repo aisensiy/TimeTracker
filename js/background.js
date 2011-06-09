@@ -61,6 +61,11 @@ function deleteDomainFromGroup(domain, group) {
 	}
 	localStorage.time_tracker_group = JSON.stringify(gs);
 }
+
+function getGroup(group) {
+	var gs = window.group;
+	return gs[group];
+}
 /**
  * convert a Date Object to a string date pattern
  * like xxxx-x-x
@@ -89,18 +94,21 @@ Date.str2date = function(str) {
  * get the date of yesterday, first get
  * the millisecond of today and minus a 
  * day's milliseconds
- * @return {string} xxxx-x-x pattern
+ * @return {array} xxxx-x-x pattern
  */
-
 Date.getyesterday = function() {
 	var date = new Date();
 	date.setTime(date.getTime() - 24 * 60 * 60 * 1000);
 	return [Date.date2str(date)];
 };
+/**
+ * get the date of today
+ * @return {array} xxxx-x-x pattern
+ */
 Date.gettoday = function() {
 	return [Date.date2str(new Date())];
 };
-Date.thisweek = function() {
+Date.getthisweek = function() {
 	var a = [];
 	var date = new Date();
 	do {
@@ -109,7 +117,7 @@ Date.thisweek = function() {
 	} while(date.getDay() != 0);
 	return a;
 };
-Date.lastweek = function() {
+Date.getlastweek = function() {
 	var a = [];
 	var date = new Date();
 	do {
@@ -122,6 +130,66 @@ Date.lastweek = function() {
 	return a;
 };
 
+var Statistics = {
+	gettotal: function(group) {
+		var obj = window.time_tracker;
+		var list = [];
+		//if the group argument is not given,
+		//list all the domains
+		if(!group) {
+			var dos = obj[domainmap];
+			for(var o in dos) {
+				list.push({domain: o, time: dos[o]['totalTime']});
+			}
+		}
+		//else if group argument is given, list the domains in group
+		else {
+			var dos = getGroup(group);
+			for(var i in dos) {
+				list.push({domain: dos[i], time: obj[domainmap][dos[i]]['totalTime']});
+			}
+		}
+		return list;
+	},
+	
+	get: function(param, group) {
+		if(param == 'total') return Statistics.gettotal(group);
+		var obj = window.time_tracker;
+		var list = [];
+		var dates = Date['get'+param]();
+		if(!group) {
+			var dos = obj[domainmap];
+			for(var p in dos) {
+				var total = 0;
+				for(var i=0; i<dates.length; i++)
+					total += 
+					obj[domainmap][p].daily[dates[i]] ? obj[domainmap][p].daily[dates[i]]:0;
+				list.push({domain: p, time: total});
+			}
+		}
+		else {
+			var dos = getGroup(group);
+			for(var j in dos) {
+				var total = 0;
+				for(var i=0; i<dates.length; i++)
+					total += 
+					obj[domainmap][dos[i]].daily[dates[i]] ? obj[domainmap][dos[i]].daily[dates[i]]:0;
+				list.push({domain: dos[j], time: total});
+			}
+		}
+		return list;
+	}, 
+	gettotaltime: function(param, group) {
+		var list = Statistics.get(param, group);
+		return Statistics.gettimeingroup(list);
+	},
+	gettimeingroup: function(list) {
+		var total = 0;
+		for(var i=0; i<list.length; i++) 
+			total += list[i].time;
+		return total;
+	}
+};
 
 /**
  * init the localStorage object

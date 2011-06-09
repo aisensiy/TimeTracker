@@ -3,6 +3,7 @@
 		<title>a</title>
 		<link type="text/css" rel="stylesheet" href="css/popup.css" />
 		<script type="text/javascript" src="js/jquery.js"></script>
+		<script type="text/javascript" src="js/global.js"></script>
 		<script type="text/javascript" src="js/background.js"></script>
 		<script type="text/javascript">
 			function fillGroupList() {
@@ -75,37 +76,72 @@
 		</ul>
 		<script type="text/javascript">
 			/*function getSecFromFormat(ss) {
-			 var pattern = /(\d+d)?(\d+h)?(\d+m)?(\d+s)/,
-			 rights = [24*60*60, 60*60, 60, 1],
-			 secs = 0;
-			 var match = pattern.exec(ss);
-			 for(var i=1; i<5; i++)
-			 secs += match[i] != undefined ? parseInt(match[i])*rights[i-1] : 0;
-			 return secs;
-			 }
+			var pattern = /(\d+d)?(\d+h)?(\d+m)?(\d+s)/,
+			rights = [24*60*60, 60*60, 60, 1],
+			secs = 0;
+			var match = pattern.exec(ss);
+			for(var i=1; i<5; i++)
+			secs += match[i] != undefined ? parseInt(match[i])*rights[i-1] : 0;
+			return secs;
+			}
 
-			 alert(getSecFromFormat('11m23s'));
-			 alert(Date.getyesterday());*/
+			alert(getSecFromFormat('11m23s'));
+			alert(Date.getyesterday());*/
+			//------------------------------------------------------------------------------
+			//test the group
 			/*
-			 destoryGroup();
-			 initGroup();
-			 alert(localStorage.time_tracker_group);
-			 createGroup('work');
-			 alert(localStorage.time_tracker_group);
-			 createGroup('weibo');
-			 alert(localStorage.time_tracker_group);
-			 addDomainToGroup('http://weibo.com', 'weibo');
-			 alert(localStorage.time_tracker_group);
-			 addDomainToGroup('http://www.douban.com', 'weibo');
-			 alert(localStorage.time_tracker_group);
-			 deleteGroup('work');
-			 alert(localStorage.time_tracker_group);
-			 deleteDomainFromGroup('http://weibo.com', 'weibo');
-			 alert(localStorage.time_tracker_group);
-			 renameGroup('weibo', 't');
-			 alert(localStorage.time_tracker_group);
-			 */
-			alert(Date.lastweek());
+			destoryGroup();
+			initGroup();
+			alert(localStorage.time_tracker_group);
+			createGroup('work');
+			alert(localStorage.time_tracker_group);
+			createGroup('weibo');
+			alert(localStorage.time_tracker_group);
+			addDomainToGroup('http://weibo.com', 'weibo');
+			alert(localStorage.time_tracker_group);
+			addDomainToGroup('http://www.douban.com', 'weibo');
+			alert(localStorage.time_tracker_group);
+			deleteGroup('work');
+			alert(localStorage.time_tracker_group);
+			deleteDomainFromGroup('http://weibo.com', 'weibo');
+			alert(localStorage.time_tracker_group);
+			renameGroup('weibo', 't');
+			alert(localStorage.time_tracker_group);
+			*/
+			//alert(Date.getlastweek());
+			//destory();
+
+			//var d1 = 'http://www.douban.com', d2 = 'http://www.google.com.hk';
+			init();
+			/*
+			addDomains(d1);
+			addDomains(d2);
+			starttimer(d1);
+			alert('...');
+			stoptimer(d1);
+			starttimer(d2);
+			alert('...');
+			stoptimer(d2);
+			alert(JSON.stringify(window.time_tracker));*/
+			//---------------------------------------------------------------------------------------
+			//test the Statistics
+
+			var list1 = Statistics.get('total');
+			alert(JSON.stringify(list1));
+			list1 = Statistics.get('lastweek');
+			alert(JSON.stringify(list1));
+			destoryGroup();
+			initGroup();
+			alert(localStorage.time_tracker_group);
+			createGroup('work');
+			alert(localStorage.time_tracker_group);
+			createGroup('weibo');
+			alert(localStorage.time_tracker_group);
+			addDomainToGroup('http://www.douban.com', 'weibo');
+			alert(localStorage.time_tracker_group);
+			list1 = Statistics.get('yesterday', 'weibo');
+			alert(JSON.stringify(list1));
+			alert(Statistics.gettotaltime('yesterday', 'weibo'));
 		</script>
 	</body>
 </html>
