@@ -1,4 +1,31 @@
+function createComparisonFunction(propertyName) {
+	return function(object1, object2){
+		var value1 = object1[propertyName];
+		var value2 = object2[propertyName];
+		if (value1 < value2){
+			return 1;
+		} else if (value1 > value2){
+			return -1;
+		} else {
+			return 0;
+		}
+	};
+}
+
 //group
+function getAllDomainGroups() {
+	var obj = window.time_tracker, group = window.group;
+	var domains = {};
+	for(var g in group)
+		for(var i=0; i<group[g].length; i++) {
+			if(!domains[group[g][i]]) domains[group[g][i]] = [g];
+			else domains[group[g][i]].push(g);
+		}
+	for(var d in domains)
+		domains[d].sort();
+	return domains;
+}
+
 function destoryGroup() {
 	if(localStorage.time_tracker_group)
 		localStorage.removeItem('time_tracker_group');
@@ -24,9 +51,11 @@ function createGroup(name) {
 
 function addDomainToGroup(domain, group) {
 	var gs = window.group;
+	if(isDomainInGroup(domain, group)) return false;
 	gs[group].push(domain);
 	localStorage.time_tracker_group = JSON.stringify(gs);
-	console.log('add ' + domain + ' to group ' + group);	
+	console.log('add ' + domain + ' to group ' + group);
+	return true;	
 }
 
 function deleteGroup(group) {
@@ -62,6 +91,24 @@ function deleteDomainFromGroup(domain, group) {
 	localStorage.time_tracker_group = JSON.stringify(gs);
 }
 
+function isDomainInGroup(domain, group) {
+	var gs = window.group;
+	for(var i=0; i<gs[group].length; i++)
+		if(gs[group][i] == domain) {
+			console.log('domain ' + domain + ' is already in ' + group);
+			return true;
+		}
+	return false;
+}
+function getDomainGroups(domain) {
+	var group = [], gs = window.group;
+	for(var g in gs) {
+		for(var i=0; i<gs[g].length; i++)
+			if(domain == gs[g][i])
+				group.push(g);
+	}
+	return group;
+}
 function getGroup(group) {
 	var gs = window.group;
 	return gs[group];
@@ -173,7 +220,7 @@ var Statistics = {
 				var total = 0;
 				for(var i=0; i<dates.length; i++)
 					total += 
-					obj[domainmap][dos[i]].daily[dates[i]] ? obj[domainmap][dos[i]].daily[dates[i]]:0;
+					obj[domainmap][dos[j]].daily[dates[i]] ? obj[domainmap][dos[j]].daily[dates[i]]:0;
 				list.push({domain: dos[j], time: total});
 			}
 		}

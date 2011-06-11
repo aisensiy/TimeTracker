@@ -1,69 +1,62 @@
 body {
-	min-width: 400px;
+	min-width: 350px;
+	font-family: Arial, Helvetica, sans-serif;
 }
-#menu {
-	margin: 0;
-	padding: 0;
-	float: left;
-	width: 80px;
-	text-align: right;
-	list-style: none;
+input[type=text] {
+	width: 5em;
 }
-#wrapper {
-	margin-left: 90px;
-}
-#data {
-	clear: both;
-	width: 100%;
-	border-collapse: collapse;
-	border-bottom: 1px solid black;
-}
-table, tbody, thead, tr, th, td {
-	margin: 0;
-	padding: 0;
-}
-th, td {
-	text-align: center;
-	padding: 0.1em 1em;
-}
-th {
-	border-bottom: 1px solid black;
-}
-td.time {
-	text-align: right;
-}
-td.name {
-	font-size: 0.8em;
-}
-td {
-	text-align: left;
-}
-th {
-	cursor: pointer;
-}
-tr:nth-child(even) {
-	background-color: #ddf;
-}
-tr:nth-child(odd) {
-	background-color: #eef;
-}
-tr.head {
-	background-color: #fff;
-}
-.dataTables_wrapper {
-	position: relative;
-}
-
-.dataTables_length {
-	font-size: 0.8em;
-}
-.dataTables_filter {
-	font-size: 0.8em;
-}
-.dataTables_info {
-	font-size: 0.8em;
-}
-
 .template {
 	display: none;
+}
+
+#domain-list>li>ul>li {
+	color: blue;
+}
+#domain-list>li>ul>li span.checks {
+	position: relative;
+}
+.group-checks {
+	background-color: white;
+	position: absolute;
+	right: 1em;
+	z-index: 100;
+}
+
+ul {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+ul#domain-list, ul#domain-list>li>ul {
+	width: 300px;
+	float: left;
+}
+span.group-name, span.group-time {
+	font-size: 1.2em;
+	font-weight: bold;
+	color: #306;
+	
+	padding: 0.2em 0.5em;
+	padding-bottom: 0.4em;
+}
+span.domain-name, span.domain-time {
+	font-size: 1.2em;
+	color: #639;
+	
+	padding: 0em 0.5em;
+}
+ul#domain-list>li, ul#domain-list>li>ul>li {
+	width: 300px;
+	float: left;
+}
+ul#domain-list>li>ul>li:hover {
+	background-color: #FFC;
+}
+span.group-name, span.domain-name, span.group-time, span.domain-time {
+	display: block;
+	float: left;
+}
+span.group-name, span.domain-name {
+	width: 210px;
+	overflow: hidden;
 }

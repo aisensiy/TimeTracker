@@ -7,35 +7,217 @@
 		<script type="text/javascript" src="js/global.js"></script>
 		<script type="text/javascript" src="js/popup.js"></script>
 		<script type="text/javascript" src="js/jquery.js"></script>
-		<script type="text/javascript" src="js/jquery.dataTables.min.js"></script>
+		<script type="text/javascript" src="js/background.js"></script>
 		<script type="text/javascript">
-			jQuery.fn.dataTableExt.oSort['time-case-asc']  = function(x,y) {
-				x = getSecFromFormat(x), y = getSecFromFormat(y);
-				return ((x < y) ? -1 : ((x > y) ?  1 : 0));
-			};
-			jQuery.fn.dataTableExt.oSort['time-case-desc'] = function(x,y) {
-				x = getSecFromFormat(x), y = getSecFromFormat(y);
-				return ((x < y) ?  1 : ((x > y) ? -1 : 0));
-			};
+			/*jQuery.fn.dataTableExt.oSort['time-case-asc']  = function(x,y) {
+			 x = getSecFromFormat(x), y = getSecFromFormat(y);
+			 return ((x < y) ? -1 : ((x > y) ?  1 : 0));
+			 };
+			 jQuery.fn.dataTableExt.oSort['time-case-desc'] = function(x,y) {
+			 x = getSecFromFormat(x), y = getSecFromFormat(y);
+			 return ((x < y) ?  1 : ((x > y) ? -1 : 0));
+			 };*/
+		</script>
+		<script type="text/javascript">
+			init();
+			initGroup();
+			//get all the group and show them in the list
+			function fillGroupList() {
+				var groups = [];
+				for(var g in window.group)
+					groups.push(g);
+				groups.sort();
+				for(var i=0; i<groups.length; i++) {
+					var val = groups[i];
+					$("ul.template.groups-list").children().clone().appendTo('#groups')
+					.find('input[type=text]').val(val).data('oldname', val);
+				}
+			}
+
+			function fillGroupedList(list, groupName, grouped) {
+				if(list.length == 0)
+					return;
+				list.sort(createComparisonFunction('time'));
+				var totaltime = Statistics.gettimeingroup(list);
+				$('ul.template.domain-list').children().clone().addClass(groupName).appendTo('#domain-list')
+				.find('span.group-name').text(groupName).end()
+				.find('span.group-time').text(totaltime);
+				for(var i=0; i<list.length; i++) {
+					$('ul.template.group-domain').children().clone().appendTo('#domain-list li.'+groupName+' ul')
+					.find('span.domain-name').text(list[i].domain).end()
+					.find('span.domain-time').text(formattime(list[i].time));
+					if(grouped != undefined)
+						grouped[list[i].domain] = 1;
+				}
+			}
+
+			function fillchecks() {
+				var domaingroup = window.getAllDomainGroups();
+				$('#domain-list>li>ul>li').each( function(n) {
+					var domainurl = $('span.domain-name', this).text();
+					if(domaingroup[domainurl] && domaingroup[domainurl].length>0)
+						$('<span class="checks"/>').html('<span>' + domaingroup[domainurl].join(',') + '</span>').appendTo(this);
+					else
+						$('<span class="checks"/>').html('<span>ungrouped</span>').appendTo(this);
+				});
+			}
+
 			$( function() {
-				
-				var obj = JSON.parse(localStorage[window.root]);
-				$("#wrapper").append(createtable(obj));
-				$("#data").dataTable({
-					"aaSorting": [[ 1, "desc" ]],
-					"aoColumns": [null, {"sType":"time-case"}]
-					});
+				fillGroupList();
+				//create group
+				$('[name="createbtn"]').click( function(event) {
+					var val = $("[name='groupname']").val();
+					if(val && createGroup(val)) {
+						$("ul.template.groups-list").children().clone().appendTo('#groups')
+						.find('input[type=text]').val(val).data('oldname', val);
+					} else if(!createGroup(val)) {
+						alert('group ' + val + ' exists');
+					}
+				});
+				//delete group
+				$('button.delete').live('click', function() {
+					var unit = $(this).closest('li');
+					var name = unit.find('[type=text]').val();
+					unit.remove();
+					deleteGroup(name);
+				});
+				//rename group
+				$('button.rename').live('click', function() {
+					var oldname = $(this).prev('[type=text]').data('oldname');
+					var newname = $(this).prev('[type=text]').val();
+					renameGroup(oldname, newname);
+					$(this).prev('[type=text]').data('oldname', newname);
+				});
+				$('#time-selector select').change( function(event) {
+					$('#domain-list').empty();
+					var time = $(':selected', this).val();
+					var obj = jQuery.extend(true, {}, window.time_tracker);
+					var groups = [], grouped = {};
+					for(var g in window.group)
+						groups.push(g);
+					groups.sort();
+					for(var i=0; i<groups.length; i++) {
+						var list = Statistics.get(time, groups[i]);
+						fillGroupedList(list, groups[i], grouped);
+					}
+					var ungrouped = [];
+					var all = Statistics.get(time);
+					for(var i=0; i<all.length; i++)
+						if(!grouped[all[i].domain])
+							ungrouped.push(all[i]);
+					ungrouped.sort();
+					fillGroupedList(ungrouped, 'ungrouped');
+					//fillchecks();
+				}).change();
+				$('ul#domain-list>li>span.group-name').click( function(event) {
+					$(this).nextAll('ul').toggle();
+				});
+				$('#domain-list>li>ul>li')
+				.live('click', function(event) {
+					var groups = [];
+					for(var g in window.group)
+						groups.push(g);
+					groups.sort();
+					$('#domain-list div.group-checks').remove();
+					var text = $(this).text();
+					var domainname = $('span.domain-name', this).text();
+					$('div.template.group-checks').clone().removeClass('template').appendTo(this);
+					for(var i=0; i<groups.length; i++) {
+						$('<li><input type="checkbox" /><label /></li>').appendTo('#domain-list div.group-checks ul.checks-list')
+						.find('input[type=checkbox]')
+						.attr('id', domainname + '|' + groups[i])
+						.attr('checked', isDomainInGroup(domainname, groups[i]) ? true : false).end()
+						.find('label').text(groups[i]).attr('for', domainname + '|' + groups[i]);
+					}
+				});
+				//here is the 'cancel' button event action
+				$('button[name="new-group-cancel"]').live('click', function(e) {
+					e.stopPropagation();
+					$(this).closest('div.group-checks').remove();
+				});
+				$('#domain-list ul.checks-list input[type=checkbox]').live('click', function(event) {
+					event.stopPropagation();
+					var domainname = this.id.split('|')[0],
+					groupname = this.id.split('|')[1],
+					currentgroup = $(this).closest('#domain-list>li').find('span.group-name').text();
+					if(!this.checked) {
+						deleteDomainFromGroup(domainname, groupname);
+						//var groups = getDomainGroups(domainname);
+						//if(groups.length == 0)
+
+						//$(this).closest('#domain-list>li>ul>li').remove();
+					} else if(this.checked) {
+						addDomainToGroup(domainname, groupname);
+						/*if(currentgroup == 'ungrouped')
+						 $(this).closest('#domain-list>li li').appendTo('ul#domain-list li.'+groupname + '<ul');
+						 else
+						 $(this).closest('#domain-list>li li').clone().appendTo('ul#domain-list li.'+groupname + '<ul');
+						 $(this).closest('div.group-checks').remove();*/
+					}
+
+					$('#time-selector select').change();
+				});
+				/*
+				 .bind('blur', function() {
+				 this.open = false;
+				 $('.group-checks', this).remove();
+				 });*/
 			});
 		</script>
 	</head>
 	<body>
-		<ul id="menu">
-			<li><a href="#" id="total">total</a></li>
-			<li><a href="#" id="today">today</a></li>
-			<li><a href="#" id="yesterday">yesterday</a></li>
+		<div id="group">
+			<div>
+				<input type="text" id="groupname" name="groupname" />
+				<input type="button" name="createbtn" value="Create Group" />
+			</div>
+			<ul id="groups">
+			</ul>
+		</div>
+		<div id="time-selector">
+			<select name="time">
+				<option value="today">today</option>
+				<option value="yesterday">yesterday</option>
+				<option value="thisweek">thisweek</option>
+				<option value="lastweek">lastweek</option>
+				<option value="total">total</option>
+			</select>
+		</div>
+		<ul id="domain-list">
 		</ul>
-		<div id='wrapper'>
-			
+		<ul class='template domain-list'>
+			<li>
+				<span class='group-name'></span>
+				<span class='group-time'></span>
+				<ul>
+				</ul>
+			</li>
+		</ul>
+		<ul class='template group-domain'>
+			<li>
+				<span class='domain-name'></span>
+				<span class='domain-time'></span>
+			</li>
+		</ul>
+		<ul class='template groups-list'>
+			<li>
+				<input type="text" name="groupname" />
+				<button type="button" class='rename'>
+					rename
+				</button>
+				<button type="button" class='delete'>
+					X
+				</button>
+			</li>
+		</ul>
+		<div class='template group-checks'>
+			<ul class="checks-list">
+			</ul>
+			<div class='checks-add-form'>
+				<button type="button" name="new-group-cancel">
+					cancel
+				</button>
+			</div>
 		</div>
 	</body>
 </html>
