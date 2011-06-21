@@ -4,14 +4,16 @@
 		<script type="text/javascript" src="js/background.js"></script>
 		<script type="text/javascript">
 			//dubug mode use
-			destory();
-			destoryGroup();
 			init();
 			initGroup();
 			// chrome.tabs.getSelected(null, function(tab) {
 			// selectedWnd = tab.windowId;
 			// });
-			setInterval(checkChromeActive, 1000);
+			chrome.windows.onRemoved.addListener(function(){
+				console.log('removed at ' + new Date());
+				stopAll();
+			});
+			setInterval(checkChromeActive, 100);
 		</script>
 	</head>
 	<body>

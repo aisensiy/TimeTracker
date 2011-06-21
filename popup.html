@@ -4,29 +4,18 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<title>meetimer</title>
 		<link href="css/popup.css" rel="stylesheet" type="text/css" />
+		<link href="css/jquery-ui-1.8.13.custom.css" rel="stylesheet" type="text/css" />
 		<script type="text/javascript" src="js/global.js"></script>
 		<script type="text/javascript" src="js/popup.js"></script>
 		<script type="text/javascript" src="js/jquery.js"></script>
+		<script type="text/javascript" src="js/jquery-ui-1.8.13.custom.min.js"></script>
 		<script type="text/javascript" src="js/background.js"></script>
-		<script type="text/javascript">
-			/*jQuery.fn.dataTableExt.oSort['time-case-asc']  = function(x,y) {
-			 x = getSecFromFormat(x), y = getSecFromFormat(y);
-			 return ((x < y) ? -1 : ((x > y) ?  1 : 0));
-			 };
-			 jQuery.fn.dataTableExt.oSort['time-case-desc'] = function(x,y) {
-			 x = getSecFromFormat(x), y = getSecFromFormat(y);
-			 return ((x < y) ?  1 : ((x > y) ? -1 : 0));
-			 };*/
-		</script>
 		<script type="text/javascript">
 			init();
 			initGroup();
 			//get all the group and show them in the list
 			function fillGroupList() {
-				var groups = [];
-				for(var g in window.group)
-					groups.push(g);
-				groups.sort();
+				var groups = getGroupArray();
 				for(var i=0; i<groups.length; i++) {
 					var val = groups[i];
 					$("ul.template.groups-list").children().clone().appendTo('#groups')
@@ -41,18 +30,19 @@
 				var totaltime = Statistics.gettimeingroup(list);
 				$('ul.template.domain-list').children().clone().addClass(groupName).appendTo('#domain-list')
 				.find('span.group-name').text(groupName).end()
-				.find('span.group-time').text(totaltime);
+				.find('span.group-time').text(formattime(totaltime));
 				for(var i=0; i<list.length; i++) {
-					$('ul.template.group-domain').children().clone().appendTo('#domain-list li.'+groupName+' ul')
-					.find('span.domain-name').text(list[i].domain).end()
-					.find('span.domain-time').text(formattime(list[i].time));
+					if(list[i].time > 0)
+						$('ul.template.group-domain').children().clone().appendTo('#domain-list li.'+groupName+' ul')
+						.find('span.domain-name').text(list[i].domain).end()
+						.find('span.domain-time').text(formattime(list[i].time));
 					if(grouped != undefined)
 						grouped[list[i].domain] = 1;
 				}
 			}
 
 			function fillchecks() {
-				var domaingroup = window.getAllDomainGroups();
+				var domaingroup = getAllDomainGroups();
 				$('#domain-list>li>ul>li').each( function(n) {
 					var domainurl = $('span.domain-name', this).text();
 					if(domaingroup[domainurl] && domaingroup[domainurl].length>0)
@@ -63,6 +53,8 @@
 			}
 
 			$( function() {
+				$('#tabset').tabs();
+
 				fillGroupList();
 				//create group
 				$('[name="createbtn"]').click( function(event) {
@@ -91,11 +83,9 @@
 				$('#time-selector select').change( function(event) {
 					$('#domain-list').empty();
 					var time = $(':selected', this).val();
-					var obj = jQuery.extend(true, {}, window.time_tracker);
-					var groups = [], grouped = {};
-					for(var g in window.group)
-						groups.push(g);
-					groups.sort();
+					//var obj = jQuery.extend(true, {}, window.time_tracker);
+					var groups = getGroupArray(), grouped = {};
+					
 					for(var i=0; i<groups.length; i++) {
 						var list = Statistics.get(time, groups[i]);
 						fillGroupedList(list, groups[i], grouped);
@@ -109,15 +99,16 @@
 					fillGroupedList(ungrouped, 'ungrouped');
 					//fillchecks();
 				}).change();
-				$('ul#domain-list>li>span.group-name').click( function(event) {
+				$('ul#domain-list>li>span.group-name').live('click', function(event) {
 					$(this).nextAll('ul').toggle();
+					if($(this).nextAll('ul').is(':hidden'))
+						$(this).switchClass('up-arrow', 'down-arrow');
+					else
+						$(this).switchClass('down-arrow', 'up-arrow');
 				});
 				$('#domain-list>li>ul>li')
 				.live('click', function(event) {
-					var groups = [];
-					for(var g in window.group)
-						groups.push(g);
-					groups.sort();
+					var groups = getGroupArray();
 					$('#domain-list div.group-checks').remove();
 					var text = $(this).text();
 					var domainname = $('span.domain-name', this).text();
@@ -157,6 +148,10 @@
 
 					$('#time-selector select').change();
 				});
+				$('button[name="clear"]').click( function() {
+					clearTime();
+					$('#time-selector select').change();
+				});
 				/*
 				 .bind('blur', function() {
 				 this.open = false;
@@ -166,28 +161,46 @@
 		</script>
 	</head>
 	<body>
-		<div id="group">
-			<div>
-				<input type="text" id="groupname" name="groupname" />
-				<input type="button" name="createbtn" value="Create Group" />
+		<div class="container">
+			<div id="tabset">
+				<ul>
+					<li>
+						<a href="#show-lists">Time Lists</a>
+					</li>
+					<li>
+						<a href="#group">Group Options</a>
+					</li>
+				</ul>
+				<div id="group">
+					<div>
+						<input type="text" id="groupname" name="groupname" />
+						<input type="button" name="createbtn" value="Create Group" />
+					</div>
+					<ul id="groups">
+					</ul>
+				</div>
+				<div id="show-lists">
+					<div id="time-selector">
+						<select name="time">
+							<option value="today">today</option>
+							<option value="yesterday">yesterday</option>
+							<option value="thisweek">thisweek</option>
+							<option value="lastweek">lastweek</option>
+							<option value="total">total</option>
+						</select>
+						<button type="button" name="clear">
+							Clear All
+						</button>
+					</div>
+					<ul id="domain-list">
+					</ul>
+				</div>
 			</div>
-			<ul id="groups">
-			</ul>
 		</div>
-		<div id="time-selector">
-			<select name="time">
-				<option value="today">today</option>
-				<option value="yesterday">yesterday</option>
-				<option value="thisweek">thisweek</option>
-				<option value="lastweek">lastweek</option>
-				<option value="total">total</option>
-			</select>
-		</div>
-		<ul id="domain-list">
-		</ul>
+		<!-- templates -->
 		<ul class='template domain-list'>
 			<li>
-				<span class='group-name'></span>
+				<span class='group-name up-arrow'></span>
 				<span class='group-time'></span>
 				<ul>
 				</ul>
@@ -195,7 +208,7 @@
 		</ul>
 		<ul class='template group-domain'>
 			<li>
-				<span class='domain-name'></span>
+				<span class='domain-name' title="click to edit groups"></span>
 				<span class='domain-time'></span>
 			</li>
 		</ul>

@@ -1,6 +1,11 @@
+br {
+	height: 0;
+	width: 0;
+	clear: both;
+}
 body {
-	min-width: 350px;
-	font-family: Arial, Helvetica, sans-serif;
+	min-width: 420px;
+	font-family: Arial, serif;
 }
 input[type=text] {
 	width: 5em;
@@ -34,29 +39,46 @@ ul#domain-list, ul#domain-list>li>ul {
 span.group-name, span.group-time {
 	font-size: 1.2em;
 	font-weight: bold;
-	color: #306;
+	color: #06c;
 	
 	padding: 0.2em 0.5em;
 	padding-bottom: 0.4em;
 }
 span.domain-name, span.domain-time {
 	font-size: 1.2em;
-	color: #639;
+	color: #39f;
 	
 	padding: 0em 0.5em;
 }
 ul#domain-list>li, ul#domain-list>li>ul>li {
-	width: 300px;
+	width: 380px;
 	float: left;
 }
 ul#domain-list>li>ul>li:hover {
 	background-color: #FFC;
+	cursor: pointer;
 }
 span.group-name, span.domain-name, span.group-time, span.domain-time {
 	display: block;
 	float: left;
 }
-span.group-name, span.domain-name {
-	width: 210px;
+#show-lists {
 	overflow: hidden;
+}
+span.group-name, span.domain-name {
+	overflow: hidden;
+}
+span.group-time, span.domain-time {
+	float: right;
+	padding-right: 1em;
+}
+span.group-name {
+	padding-right: 19px;
+	
+}
+.up-arrow {
+	background: url(images/sort_asc.png) right center no-repeat;
+}
+.down-arrow {
+	background: url(images/sort_desc.png) right 3px no-repeat;
 }

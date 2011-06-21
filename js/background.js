@@ -14,7 +14,7 @@ function createComparisonFunction(propertyName) {
 
 //group
 function getAllDomainGroups() {
-	var obj = window.time_tracker, group = window.group;
+	var obj = JSON.parse(localStorage.time_tracker_ext), group = JSON.parse(localStorage.time_tracker_group);
 	var domains = {};
 	for(var g in group)
 		for(var i=0; i<group[g].length; i++) {
@@ -25,20 +25,25 @@ function getAllDomainGroups() {
 		domains[d].sort();
 	return domains;
 }
-
+function getGroupArray() {
+	var group = JSON.parse(localStorage.time_tracker_group);
+	var groups = [];
+	for(var g in group)
+		groups.push(g);
+	groups.sort();
+	return groups;
+}
 function destoryGroup() {
 	if(localStorage.time_tracker_group)
 		localStorage.removeItem('time_tracker_group');
-	delete window.group;
 }
 function initGroup() {
 	if(!localStorage.time_tracker_group)
 		localStorage.time_tracker_group = JSON.stringify({});
-	window.group = JSON.parse(localStorage.time_tracker_group); 
 }
 
 function createGroup(name) {
-	var gs = window.group;
+	var gs = JSON.parse(localStorage.time_tracker_group);
 	if(gs[name]) {
 		console.log(name + ' has created.');
 		return false;
@@ -50,7 +55,7 @@ function createGroup(name) {
 }
 
 function addDomainToGroup(domain, group) {
-	var gs = window.group;
+	var gs = JSON.parse(localStorage.time_tracker_group);
 	if(isDomainInGroup(domain, group)) return false;
 	gs[group].push(domain);
 	localStorage.time_tracker_group = JSON.stringify(gs);
@@ -59,14 +64,14 @@ function addDomainToGroup(domain, group) {
 }
 
 function deleteGroup(group) {
-	var gs = window.group;
+	var gs = JSON.parse(localStorage.time_tracker_group);
 	delete gs[group];
 	localStorage.time_tracker_group = JSON.stringify(gs);
 	console.log('delete group ' + group);
 }
 
 function renameGroup(oldname, newname) {
-	var gs = window.group;
+	var gs = JSON.parse(localStorage.time_tracker_group);
 	if(gs[newname]) {
 		console.log('group ' + newname + ' exists');
 		return false;
@@ -80,7 +85,7 @@ function renameGroup(oldname, newname) {
 }
 
 function deleteDomainFromGroup(domain, group) {
-	var gs = window.group;
+	var gs = JSON.parse(localStorage.time_tracker_group);
 	for(var i=0; i<gs[group].length; i++) {
 		if(gs[group][i] == domain) {
 			gs[group].splice(i, 1);
@@ -92,7 +97,7 @@ function deleteDomainFromGroup(domain, group) {
 }
 
 function isDomainInGroup(domain, group) {
-	var gs = window.group;
+	var gs = JSON.parse(localStorage.time_tracker_group);
 	for(var i=0; i<gs[group].length; i++)
 		if(gs[group][i] == domain) {
 			console.log('domain ' + domain + ' is already in ' + group);
@@ -101,7 +106,7 @@ function isDomainInGroup(domain, group) {
 	return false;
 }
 function getDomainGroups(domain) {
-	var group = [], gs = window.group;
+	var group = [], gs = JSON.parse(localStorage.time_tracker_group);
 	for(var g in gs) {
 		for(var i=0; i<gs[g].length; i++)
 			if(domain == gs[g][i])
@@ -110,7 +115,7 @@ function getDomainGroups(domain) {
 	return group;
 }
 function getGroup(group) {
-	var gs = window.group;
+	var gs = JSON.parse(localStorage.time_tracker_group);
 	return gs[group];
 }
 /**
@@ -179,7 +184,7 @@ Date.getlastweek = function() {
 
 var Statistics = {
 	gettotal: function(group) {
-		var obj = window.time_tracker;
+		var obj = JSON.parse(localStorage.time_tracker_ext);
 		var list = [];
 		//if the group argument is not given,
 		//list all the domains
@@ -201,7 +206,7 @@ var Statistics = {
 	
 	get: function(param, group) {
 		if(param == 'total') return Statistics.gettotal(group);
-		var obj = window.time_tracker;
+		var obj = JSON.parse(localStorage.time_tracker_ext);
 		var list = [];
 		var dates = Date['get'+param]();
 		if(!group) {
@@ -243,14 +248,12 @@ var Statistics = {
  * here variable root is a global variable
  */
 function init() {
-
-	if(!localStorage[root]) {
-		window.time_tracker = {
+	if(!localStorage.time_tracker_ext) {
+		var obj = {
 			"domains": {}
 		};
-		localStorage[root] = JSON.stringify(window.time_tracker);
-	} else
-		window.time_tracker = JSON.parse(localStorage[root]);
+		localStorage.time_tracker_ext = JSON.stringify(obj);
+	} 
 }
 
 /**
@@ -258,9 +261,8 @@ function init() {
  * localStorage
  */
 function destory() {
-	if(localStorage[root])
-		localStorage.removeItem(root);
-	delete window.time_tracker;
+	if(localStorage.time_tracker_ext)
+		localStorage.removeItem('time_tracker_ext');
 }
 
 /**
@@ -268,12 +270,13 @@ function destory() {
  * @param {string} domain
  */
 function addDomains(domain) {
-	var obj = window.time_tracker;
+	var obj = JSON.parse(localStorage.time_tracker_ext);
 	obj[domainmap][domain] = {
 		"totalTime": 0.0,
 		"daily": {}
 	};
 	localStorage[root] = JSON.stringify(obj);
+	return obj;
 }
 
 /**
@@ -281,7 +284,7 @@ function addDomains(domain) {
  * @param {string} domain
  */
 function removeDomain(domain) {
-	var obj = window.time_tracker;
+	var obj = JSON.parse(localStorage.time_tracker_ext);
 	delete obj[domainmap][domain];
 	localStorage[root] = JSON.stringify(obj);
 }
@@ -293,15 +296,16 @@ function removeDomain(domain) {
  * @param {string} domain the url of a domain
  */
 function starttimer(domain) {
-	var obj = window.time_tracker;
+	var obj = JSON.parse(localStorage.time_tracker_ext);
 	//if no domain, add it
 	if(!obj[domainmap][domain]) {
-		addDomains(domain);
+		obj = addDomains(domain);
 	}
 	var d = obj[domainmap][domain];
 	//if started return
-	if(d['start'])
-		return;
+	if(d['start']) {
+		stoptimer(domain);		
+	}
 	//set start the millisecond of now
 	d['start'] = (new Date()).getTime();
 	//persist the object
@@ -313,13 +317,13 @@ function starttimer(domain) {
  * and delete the start property.
  */
 function stoptimer(domain) {
-	var obj = window.time_tracker;
+	var obj = JSON.parse(localStorage.time_tracker_ext);
 	var item = obj[domainmap][domain];
 	if(!item.start)
 		return;
 	var now = new Date();
 	//get the seconds
-	var secs = Math.round((now.getTime() - item.start) / 1000.0);
+	var secs = now.getTime() - item.start;
 	//delete start property
 	delete item.start;
 	if(secs < 0) {
@@ -331,9 +335,18 @@ function stoptimer(domain) {
 	//add to the total timer
 	item['totalTime'] += secs;
 	//persist the object
-	localStorage[root] = JSON.stringify(obj);
+	localStorage.time_tracker_ext = JSON.stringify(obj);
 }
 
+function clearTime() {
+	var obj = JSON.parse(localStorage.time_tracker_ext);
+	for( var d in obj[domainmap])
+		obj[domainmap][d] = {
+			"totalTime": 0.0,
+			"daily": {}
+		};
+	localStorage[root] = JSON.stringify(obj);
+}
 /**
  * get the domain from a url
  */
@@ -366,6 +379,12 @@ function checkChromeActive() {
 		});
 	});
 }
+function stopAll() {
+	var obj = JSON.parse(localStorage.time_tracker_ext);
+	for(var d in obj[domainmap]) {
+		stoptimer(d);
+	}
+}
 
 /**
  * when this function is called, oldurl url oldFocus focus
@@ -373,13 +392,13 @@ function checkChromeActive() {
  * control start or stop timer.
  */
 function setstatus() {
-	var obj = window.time_tracker;
+	var obj = JSON.parse(localStorage.time_tracker_ext);
 	var ourl = window.oldurl,
 	nurl = window.url,
 	of = window.oldFocus,
 	nf = window.focus;
 	//if i just get the chrome to top most, start track nurl
-	if(!of && nf) {
+	if(!of && nf && nurl) {
 		starttimer(nurl);
 		console.log('from unfocus to focus: ' + nurl + ' start at ' + new Date());
 	}
@@ -399,6 +418,10 @@ function setstatus() {
 			}
 			starttimer(nurl);
 			console.log('start ' + nurl);
+		}
+		else {
+			stoptimer(ourl);
+			starttimer(nurl);
 		}
 	}
 }

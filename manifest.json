@@ -1,11 +1,11 @@
 {
-	"name": "Animated Page Action",
-	"description": "This extension adds an animated browser action to the toolbar.",
+	"name": "Browse Time Tracker",
+	"description": "This extension track how mush time you cost in this urls",
 	"version": "1.0",
 	"permissions": ["tabs"],
 	"background_page": "background.html",
 	"browser_action": {
-		"default_title": "First icon",
+		"default_title": "Browse Time Tracker",
 		"default_icon": "icon.png",
 		"popup": "popup.html"
 	}
