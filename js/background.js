@@ -1,3 +1,6 @@
+var root = 'time_tracker_ext';
+var domainmap = "domains";
+
 function createComparisonFunction(propertyName) {
 	return function(object1, object2){
 		var value1 = object1[propertyName];
@@ -12,6 +15,47 @@ function createComparisonFunction(propertyName) {
 	};
 }
 
+/*
+ * get a time format like xdxhxmxs
+ */
+function formattime(secs) {
+	var t = secs2format(secs);
+	var str = "";
+	if(t.d > 0)
+		str += t.d + 'd';
+	if(t.h > 0)
+		str += t.h + 'h';
+	if(t.m > 0)
+		str += t.m + 'm';
+	if(t.s >= 0)
+		str += t.s + 's';
+	return str;
+}
+
+/**
+ * reverse of formattime
+ * from xdxhxmxs => xxx seconds
+ * @param {string} ss the xdxhxmxs format time
+ * @return {number} seconds
+ */
+function getSecFromFormat(ss) {
+	var pattern = /(\d+d)?(\d+h)?(\d+m)?(\d+s)/,
+	rights = [24*60*60, 60*60, 60, 1],
+	secs = 0;
+	var match = pattern.exec(ss);
+	for(var i=1; i<5; i++)
+		secs += match[i] != undefined ? parseInt(match[i])*rights[i-1] : 0;
+	return secs;
+}
+function secs2format(secs) {
+	secs = secs / 10;
+	return {
+		'd':parseInt(secs/60/24/60),
+		'h':parseInt(secs/60 % (24*60) / 60),
+		'm':parseInt(secs/60 % (60*24) % 60),
+		's':parseInt(secs % 60)
+	};
+}
 //group
 var Group = {
 	initGroup: function() {
