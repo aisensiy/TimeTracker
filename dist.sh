@@ -10,4 +10,4 @@ fi
 echo $distdir"/"
 rm -r $distdir
 mkdir $distdir
-cp -r background.html popup.html manifest.json css/ js/ icon.png $distdir'/'
+cp -r background.html popup.html manifest.json css/ js/ icon.png icon48.png $distdir'/'

@@ -12,10 +12,10 @@
 		<script type="text/javascript" src="js/background.js"></script>
 		<script type="text/javascript">
 			init();
-			initGroup();
+			Group.initGroup();
 			//get all the group and show them in the list
 			function fillGroupList() {
-				var groups = getGroupArray();
+				var groups = Group.getGroupArray();
 				for(var i=0; i<groups.length; i++) {
 					var val = groups[i];
 					$("ul.template.groups-list").children().clone().appendTo('#groups')
@@ -32,7 +32,7 @@
 				.find('span.group-name').text(groupName).end()
 				.find('span.group-time').text(formattime(totaltime));
 				for(var i=0; i<list.length; i++) {
-					if(list[i].time > 0)
+					if(list[i].time/1000 > 0)
 						$('ul.template.group-domain').children().clone().appendTo('#domain-list li.'+groupName+' ul')
 						.find('span.domain-name').text(list[i].domain).end()
 						.find('span.domain-time').text(formattime(list[i].time));
@@ -42,7 +42,7 @@
 			}
 
 			function fillchecks() {
-				var domaingroup = getAllDomainGroups();
+				var domaingroup = Group.getAllDomainGroups();
 				$('#domain-list>li>ul>li').each( function(n) {
 					var domainurl = $('span.domain-name', this).text();
 					if(domaingroup[domainurl] && domaingroup[domainurl].length>0)
@@ -58,11 +58,13 @@
 				fillGroupList();
 				//create group
 				$('[name="createbtn"]').click( function(event) {
-					var val = $("[name='groupname']").val();
-					if(val && createGroup(val)) {
+					var val = $("[name='groupname']").val().trim();
+					if(val && val != "ungrouped" && Group.createGroup(val)) {
 						$("ul.template.groups-list").children().clone().appendTo('#groups')
 						.find('input[type=text]').val(val).data('oldname', val);
-					} else if(!createGroup(val)) {
+					} else if(!val) {
+						alert('the input is empty.');
+					} else {
 						alert('group ' + val + ' exists');
 					}
 				});
@@ -71,20 +73,20 @@
 					var unit = $(this).closest('li');
 					var name = unit.find('[type=text]').val();
 					unit.remove();
-					deleteGroup(name);
+					Group.deleteGroup(name);
 				});
 				//rename group
 				$('button.rename').live('click', function() {
 					var oldname = $(this).prev('[type=text]').data('oldname');
 					var newname = $(this).prev('[type=text]').val();
-					renameGroup(oldname, newname);
+					Group.renameGroup(oldname, newname);
 					$(this).prev('[type=text]').data('oldname', newname);
 				});
 				$('#time-selector select').change( function(event) {
 					$('#domain-list').empty();
 					var time = $(':selected', this).val();
 					//var obj = jQuery.extend(true, {}, window.time_tracker);
-					var groups = getGroupArray(), grouped = {};
+					var groups = Group.getGroupArray(), grouped = {};
 					
 					for(var i=0; i<groups.length; i++) {
 						var list = Statistics.get(time, groups[i]);
@@ -107,38 +109,41 @@
 						$(this).switchClass('down-arrow', 'up-arrow');
 				});
 				$('#domain-list>li>ul>li')
-				.live('click', function(event) {
-					var groups = getGroupArray();
-					$('#domain-list div.group-checks').remove();
+				.live('mouseenter', function(event) {
+					var groups = Group.getGroupArray();
+					if(groups.length == 0) return;
 					var text = $(this).text();
 					var domainname = $('span.domain-name', this).text();
-					$('div.template.group-checks').clone().removeClass('template').appendTo(this);
+					$('ul.template.group-checks').clone().removeClass('template').appendTo(this);
 					for(var i=0; i<groups.length; i++) {
-						$('<li><input type="checkbox" /><label /></li>').appendTo('#domain-list div.group-checks ul.checks-list')
+						$('<li><input type="checkbox" /><label /></li>').appendTo('#domain-list ul.group-checks')
 						.find('input[type=checkbox]')
 						.attr('id', domainname + '|' + groups[i])
-						.attr('checked', isDomainInGroup(domainname, groups[i]) ? true : false).end()
+						.attr('checked', Group.isDomainInGroup(domainname, groups[i]) ? true : false).end()
 						.find('label').text(groups[i]).attr('for', domainname + '|' + groups[i]);
 					}
+				})
+				.live('mouseleave', function(event){
+					$('ul.group-checks', this).remove();
 				});
 				//here is the 'cancel' button event action
-				$('button[name="new-group-cancel"]').live('click', function(e) {
+				/*$('button[name="new-group-cancel"]').live('click', function(e) {
 					e.stopPropagation();
 					$(this).closest('div.group-checks').remove();
-				});
-				$('#domain-list ul.checks-list input[type=checkbox]').live('click', function(event) {
+				});*/
+				$('#domain-list ul.group-checks input[type=checkbox]').live('click', function(event) {
 					event.stopPropagation();
 					var domainname = this.id.split('|')[0],
 					groupname = this.id.split('|')[1],
 					currentgroup = $(this).closest('#domain-list>li').find('span.group-name').text();
 					if(!this.checked) {
-						deleteDomainFromGroup(domainname, groupname);
+						Group.deleteDomainFromGroup(domainname, groupname);
 						//var groups = getDomainGroups(domainname);
 						//if(groups.length == 0)
 
 						//$(this).closest('#domain-list>li>ul>li').remove();
 					} else if(this.checked) {
-						addDomainToGroup(domainname, groupname);
+						Group.addDomainToGroup(domainname, groupname);
 						/*if(currentgroup == 'ungrouped')
 						 $(this).closest('#domain-list>li li').appendTo('ul#domain-list li.'+groupname + '<ul');
 						 else
@@ -208,7 +213,7 @@
 		</ul>
 		<ul class='template group-domain'>
 			<li>
-				<span class='domain-name' title="click to edit groups"></span>
+				<span class='domain-name'></span>
 				<span class='domain-time'></span>
 			</li>
 		</ul>
@@ -223,14 +228,7 @@
 				</button>
 			</li>
 		</ul>
-		<div class='template group-checks'>
-			<ul class="checks-list">
-			</ul>
-			<div class='checks-add-form'>
-				<button type="button" name="new-group-cancel">
-					cancel
-				</button>
-			</div>
-		</div>
+		<ul class='template group-checks'>
+		</ul>
 	</body>
 </html>

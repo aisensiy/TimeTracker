@@ -1,6 +1,7 @@
 {
 	"name": "Browse Time Tracker",
-	"description": "This extension track how mush time you cost in this urls",
+	"description": "This extension track how much time you cost in every websites",
+	"icons": {"128": "icon.png", "48": "icon48.png"},
 	"version": "1.0",
 	"permissions": ["tabs"],
 	"background_page": "background.html",

@@ -20,17 +20,26 @@ input[type=text] {
 #domain-list>li>ul>li span.checks {
 	position: relative;
 }
-.group-checks {
-	background-color: white;
-	position: absolute;
-	right: 1em;
-	z-index: 100;
-}
 
 ul {
 	margin: 0;
 	padding: 0;
 	list-style: none;
+}
+ul.group-checks {
+	background-color: white;
+	position: absolute;
+	right: 1em;
+	z-index: 100;
+	padding: 0.2em 2em 0.2em 0.2em;
+	border: 1px solid black;
+}
+ul.group-checks li {
+	color: black;
+	line-height: 1.2em;
+}
+ul.group-checks input[type=checkbox], ul.group-checks label {
+	cursor: pointer;
 }
 ul#domain-list, ul#domain-list>li>ul {
 	width: 300px;
@@ -47,7 +56,6 @@ span.group-name, span.group-time {
 span.domain-name, span.domain-time {
 	font-size: 1.2em;
 	color: #39f;
-	
 	padding: 0em 0.5em;
 }
 ul#domain-list>li, ul#domain-list>li>ul>li {
@@ -56,7 +64,7 @@ ul#domain-list>li, ul#domain-list>li>ul>li {
 }
 ul#domain-list>li>ul>li:hover {
 	background-color: #FFC;
-	cursor: pointer;
+	cursor: default;
 }
 span.group-name, span.domain-name, span.group-time, span.domain-time {
 	display: block;
@@ -74,7 +82,6 @@ span.group-time, span.domain-time {
 }
 span.group-name {
 	padding-right: 19px;
-	
 }
 .up-arrow {
 	background: url(images/sort_asc.png) right center no-repeat;

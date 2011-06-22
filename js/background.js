@@ -13,6 +13,108 @@ function createComparisonFunction(propertyName) {
 }
 
 //group
+var Group = {
+	initGroup: function() {
+		if(!localStorage.time_tracker_group)
+			localStorage.time_tracker_group = JSON.stringify({});
+	},
+	getAllDomainGroups: function() {
+		var obj = JSON.parse(localStorage.time_tracker_ext), group = JSON.parse(localStorage.time_tracker_group);
+		var domains = {};
+		for(var g in group)
+			for(var i=0; i<group[g].length; i++) {
+				if(!domains[group[g][i]]) domains[group[g][i]] = [g];
+				else domains[group[g][i]].push(g);
+			}
+		for(var d in domains)
+			domains[d].sort();
+		return domains;
+	},
+	getGroupArray: function() {
+		var group = JSON.parse(localStorage.time_tracker_group);
+		var groups = [];
+		for(var g in group)
+			groups.push(g);
+		groups.sort();
+		return groups;
+	},
+	destoryGroup: function() {
+		if(localStorage.time_tracker_group)
+			localStorage.removeItem('time_tracker_group');
+	},
+	createGroup: function(name) {
+		var gs = JSON.parse(localStorage.time_tracker_group);
+		if(gs[name]) {
+			console.log(name + ' has created.');
+			return false;
+		}
+		gs[name] = [];
+		localStorage.time_tracker_group = JSON.stringify(gs);
+		console.log('create group ' + name);
+		return true;
+	},
+	addDomainToGroup: function(domain, group) {
+		var gs = JSON.parse(localStorage.time_tracker_group);
+		if(Group.isDomainInGroup(domain, group)) return false;
+		gs[group].push(domain);
+		localStorage.time_tracker_group = JSON.stringify(gs);
+		console.log('add ' + domain + ' to group ' + group);
+		return true;	
+	},
+	deleteGroup: function(group) {
+		var gs = JSON.parse(localStorage.time_tracker_group);
+		delete gs[group];
+		localStorage.time_tracker_group = JSON.stringify(gs);
+		console.log('delete group ' + group);
+	}, 
+	renameGroup: function(oldname, newname) {
+		var gs = JSON.parse(localStorage.time_tracker_group);
+		if(gs[newname]) {
+			console.log('group ' + newname + ' exists');
+			return false;
+		} else {
+			gs[newname] = gs[oldname];
+			delete gs[oldname];
+			localStorage.time_tracker_group = JSON.stringify(gs);
+			console.log('rename group ' + oldname + ' to ' + newname);
+			return true;
+		}
+	},
+	deleteDomainFromGroup: function(domain, group){
+		var gs = JSON.parse(localStorage.time_tracker_group);
+		for(var i=0; i<gs[group].length; i++) {
+			if(gs[group][i] == domain) {
+				gs[group].splice(i, 1);
+				console.log('delete ' + domain + ' in group ' + group);
+				break;
+			}
+		}
+		localStorage.time_tracker_group = JSON.stringify(gs);
+	},
+	isDomainInGroup: function(domain, group) {
+		var gs = JSON.parse(localStorage.time_tracker_group);
+		for(var i=0; i<gs[group].length; i++)
+			if(gs[group][i] == domain) {
+				console.log('domain ' + domain + ' is already in ' + group);
+				return true;
+			}
+		return false;
+	},
+	getDomainGroups: function (domain) {
+		var group = [], gs = JSON.parse(localStorage.time_tracker_group);
+		for(var g in gs) {
+			for(var i=0; i<gs[g].length; i++)
+				if(domain == gs[g][i])
+					group.push(g);
+		}
+		return group;
+	},
+ getGroup: function(group) {
+		var gs = JSON.parse(localStorage.time_tracker_group);
+		return gs[group];
+	}
+};
+/*
 function getAllDomainGroups() {
 	var obj = JSON.parse(localStorage.time_tracker_ext), group = JSON.parse(localStorage.time_tracker_group);
 	var domains = {};
@@ -118,6 +220,7 @@ function getGroup(group) {
 	var gs = JSON.parse(localStorage.time_tracker_group);
 	return gs[group];
 }
+*/
 /**
  * convert a Date Object to a string date pattern
  * like xxxx-x-x
@@ -196,7 +299,7 @@ var Statistics = {
 		}
 		//else if group argument is given, list the domains in group
 		else {
-			var dos = getGroup(group);
+			var dos = Group.getGroup(group);
 			for(var i in dos) {
 				list.push({domain: dos[i], time: obj[domainmap][dos[i]]['totalTime']});
 			}
@@ -220,7 +323,7 @@ var Statistics = {
 			}
 		}
 		else {
-			var dos = getGroup(group);
+			var dos = Group.getGroup(group);
 			for(var j in dos) {
 				var total = 0;
 				for(var i=0; i<dates.length; i++)
@@ -323,7 +426,7 @@ function stoptimer(domain) {
 		return;
 	var now = new Date();
 	//get the seconds
-	var secs = now.getTime() - item.start;
+	var secs = Math.round((now.getTime() - item.start) / 100.0);
 	//delete start property
 	delete item.start;
 	if(secs < 0) {
