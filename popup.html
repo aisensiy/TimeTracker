@@ -60,6 +60,7 @@
 					if(val && val != "ungrouped" && Group.createGroup(val)) {
 						$("ul.template.groups-list").children().clone().appendTo('#groups')
 						.find('input[type=text]').val(val).data('oldname', val);
+						$('#time-selector select').change();
 					} else if(!val) {
 						alert('the input is empty.');
 					} else {
@@ -72,6 +73,7 @@
 					var name = unit.find('[type=text]').val();
 					unit.remove();
 					Group.deleteGroup(name);
+					$('#time-selector select').change();
 				});
 				//rename group
 				$('button.rename').live('click', function() {
@@ -79,6 +81,7 @@
 					var newname = $(this).prev('[type=text]').val();
 					Group.renameGroup(oldname, newname);
 					$(this).prev('[type=text]').data('oldname', newname);
+					$('#time-selector select').change();
 				});
 				$('#time-selector select').change( function(event) {
 					$('#domain-list').empty();

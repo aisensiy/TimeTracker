@@ -12,6 +12,9 @@
 				console.log('removed at ' + new Date());
 				stopAll();
 			});
+			chrome.windows.onCreated.addListener(function(){
+				deleteStart();
+			});
 			setInterval(checkChromeActive, 1000);
 		</script>
 	</head>

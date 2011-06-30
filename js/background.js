@@ -449,9 +449,9 @@ function starttimer(domain) {
 		obj = addDomains(domain);
 	}
 	var d = obj[domainmap][domain];
-	//if started return
-	if(d['start']) {
-		stoptimer(domain);		
+	//stop all timer then start this
+	for(var dm in obj[domainmap]) {
+		stoptimer(dm);
 	}
 	//set start the millisecond of now
 	d['start'] = (new Date()).getTime();
@@ -481,6 +481,7 @@ function stoptimer(domain) {
 	item["daily"][Date.date2str(now)] ? item["daily"][Date.date2str(now)]+secs : secs;
 	//add to the total timer
 	item['totalTime'] += secs;
+	//console.log('stop timer at ' + domain + ' ' + new Date() + ' :' + secs / 10.0 + 's');
 	//persist the object
 	localStorage.time_tracker_ext = JSON.stringify(obj);
 }
@@ -530,6 +531,12 @@ function stopAll() {
 	var obj = JSON.parse(localStorage.time_tracker_ext);
 	for(var d in obj[domainmap]) {
 		stoptimer(d);
+	}
+}
+function deleteStart() {
+	var obj = JSON.parse(localStorage.time_tracker_ext);
+	for(var d in obj[domainmap]) {
+		delete d.start;
 	}
 }
 
