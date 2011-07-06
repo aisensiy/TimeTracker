@@ -6,6 +6,7 @@ br {
 body {
 	min-width: 420px;
 	font-family: Arial, serif;
+	font-size: 15px;
 }
 input[type=text] {
 	width: 5em;
@@ -88,4 +89,8 @@ span.group-name {
 }
 .down-arrow {
 	background: url(images/sort_desc.png) right 3px no-repeat;
+}
+.error {
+	background-color: #ffcece;
+	padding: 0.2em;
 }

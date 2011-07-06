@@ -14,6 +14,7 @@
 			//get all the group and show them in the list
 			function fillGroupList() {
 				var groups = Group.getGroupArray();
+				$('#groups').empty();
 				for(var i=0; i<groups.length; i++) {
 					var val = groups[i];
 					$("ul.template.groups-list").children().clone().appendTo('#groups')
@@ -30,7 +31,7 @@
 				.find('span.group-name').text(groupName).end()
 				.find('span.group-time').text(formattime(totaltime));
 				for(var i=0; i<list.length; i++) {
-					if(list[i].time/1000 > 0)
+					if(parseInt(list[i].time/10) > 0)
 						$('ul.template.group-domain').children().clone().appendTo('#domain-list li.'+groupName+' ul')
 						.find('span.domain-name').text(list[i].domain).end()
 						.find('span.domain-time').text(formattime(list[i].time));
@@ -49,6 +50,20 @@
 						$('<span class="checks"/>').html('<span>ungrouped</span>').appendTo(this);
 				});
 			}
+			function checkGroupName(val) {
+				var p1 = /^[\u4e00-\u9fa5\w]+$/;
+				if(p1.test(val.trim())) {
+					val = val.trim();
+					return val;
+				}
+				return '';
+			}
+			function showError(text) {
+				$('#group div:first-child').append('<p class="error">' + text + '</p>');
+			}
+			function hideError() {
+				$('#group div:first-child .error').remove();
+			}
 
 			$( function() {
 				$('#tabset').tabs();
@@ -56,15 +71,16 @@
 				fillGroupList();
 				//create group
 				$('[name="createbtn"]').click( function(event) {
-					var val = $("[name='groupname']").val().trim();
-					if(val && val != "ungrouped" && Group.createGroup(val)) {
+					hideError();
+					var val = checkGroupName($("[name='groupname']").val());
+					if(val !== '' && val != "ungrouped" && Group.createGroup(val)) {
 						$("ul.template.groups-list").children().clone().appendTo('#groups')
 						.find('input[type=text]').val(val).data('oldname', val);
 						$('#time-selector select').change();
-					} else if(!val) {
-						alert('the input is empty.');
+					} else if(val === '') {
+						showError('please do not input special chars.');
 					} else {
-						alert('group ' + val + ' exists');
+						showError('group ' + val + ' exists');
 					}
 				});
 				//delete group
@@ -77,10 +93,18 @@
 				});
 				//rename group
 				$('button.rename').live('click', function() {
+					hideError();
 					var oldname = $(this).prev('[type=text]').data('oldname');
-					var newname = $(this).prev('[type=text]').val();
-					Group.renameGroup(oldname, newname);
-					$(this).prev('[type=text]').data('oldname', newname);
+					var newname = checkGroupName($(this).prev('[type=text]').val().trim());
+					if(newname !== '' && newname != 'ungrouped' && Group.renameGroup(oldname, newname)) {
+						$(this).prev('[type=text]').data('oldname', newname);
+					}
+					else if(newname === '') {
+						showError('please do not input special chars.');
+					} else {
+						showError('group ' + newname + ' exists');
+					}
+					fillGroupList();
 					$('#time-selector select').change();
 				});
 				$('#time-selector select').change( function(event) {
