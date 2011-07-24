@@ -48,7 +48,6 @@ function getSecFromFormat(ss) {
 	return secs;
 }
 function secs2format(secs) {
-	secs = secs / 10;
 	return {
 		'd':parseInt(secs/60/24/60),
 		'h':parseInt(secs/60 % (24*60) / 60),
@@ -288,7 +287,7 @@ var Statistics = {
  * init the localStorage object
  * here variable root is a global variable
  */
-function init() {
+function initDomainStorage() {
 	if(!localStorage.time_tracker_ext) {
 		var obj = {
 			"domains": {}
@@ -474,13 +473,3 @@ function setstatus() {
 	}
 }
 
-//dubug mode use
-// destory();
-// init();
-// chrome.tabs.getSelected(null, function(tab) {
-// selectedWnd = tab.windowId;
-// });
-// setInterval(checkChromeActive, 1000);
-// chrome.windows.onFocusChanged.addListener( function(winid) {
-	// checkChromeActive();
-// });

@@ -2,20 +2,165 @@
 	<head>
 		<script type="text/javascript" src="js/background.js"></script>
 		<script type="text/javascript">
-			//dubug mode use
-			init();
-			Group.initGroup();
-			// chrome.tabs.getSelected(null, function(tab) {
-			// selectedWnd = tab.windowId;
-			// });
-			chrome.windows.onRemoved.addListener(function(){
+			var currentDomain = null;
+			var startTime = null;
+			var currentTabId = null;
+			var updateCounterInterval = 10 * 1000;
+			var lastActivitySeconds = 0;
+			//init();
+			//Group.initGroup();
+			function checkIdleTime(seconds) {
+				console.log('Checking idle time.');
+				lastActivitySeconds += 10;
+				console.log('Last activity was ' + lastActivitySeconds + ' seconds ago.');
+				console.log('Paused = ' + localStorage['pause']);
+				if(localStorage['pause'] == 'false' && lastActivitySeconds > 60) 
+					pause();
+			}
+			function pause() {
+				localStorage['pause'] = 'true';
+			}
+			function resume() {
+				localStorage['pause'] = 'false';
+			}
+			function resetActivity() {
+				lastActivitySeconds = 0;
+				if(localStorage['pause'] == 'true')
+					resume();
+			}
+			function updateCounter() {
+				if(localStorage['pause'] == 'true') {
+					currentDomain = null;
+					return;
+				}
+				if(currentTabId == null) return;
+				chrome.tabs.get(currentTabId, function(tab){
+					chrome.windows.get(tab.windowId, function(window){
+						//If the window is not topmost, don't update counter
+						if(!window.focused) return;
+						var domain = getDomain(tab.url);
+						//If the domain is invalid, don't update counter
+						if(domain == null) {
+							console.log('Unable to update counter with url: ' + tab.url);
+							return;
+						}
+						//We can't update the counter when the global currentDomain is null,
+						//and we set the domain to current, and the startTime is always 
+						//update together with currentDomain
+						if(currentDomain == null) {
+							currentDomain = domain;
+							startTime = new Date();
+							console.log('start timer for: ' + currentDomain);
+							return;
+						}
+						var delta = new Date().getTime() - startTime.getTime();
+						if(delta < updateCounterInterval * 100) {
+							updateTime(currentDomain, delta / 1000);
+							console.log("End timer for: " + currentDomain + ' start timer for: ' + domain);
+						}
+						else {
+							console.log('It is a invalid update for its too big.');
+						}
+						currentDomain = domain;
+						startTime = new Date();
+					});
+				});
+			}
+			/**
+			 *update the time in the localStorage
+			 */
+			function updateTime(domain, seconds) {
+				var obj = JSON.parse(localStorage.time_tracker_ext);
+				var item = obj.domains[domain];
+				if(!item) {
+					obj = addDomains(domain);
+					item = obj.domains[domain];
+				}
+				var now = new Date();
+				//add the seconds to daily
+				item["daily"][Date.date2str(now)] =
+				item["daily"][Date.date2str(now)] ? item["daily"][Date.date2str(now)]+seconds : seconds;
+				//add to the total timer
+				item['totalTime'] += seconds;
+				localStorage.time_tracker_ext = JSON.stringify(obj);
+			}
+			
+			function initialize() {
+				initDomainStorage();
+				Group.initGroup();
+				localStorage['pause'] = 'false';
+
+				chrome.tabs.onSelectionChanged.addListener(function(tabid, seclectInfo){
+					console.log('Tab changed');
+					resetActivity();
+					currentTabId = tabid;
+					updateCounter();
+				});
+
+				chrome.tabs.onUpdated.addListener(function(tabid, changeInfo, tab){
+					if(currentTabId == tabid) {
+						console.log('tab update');
+						updateCounter();
+					}
+				});
+
+				chrome.windows.onFocusChanged.addListener(
+					function(wndid) {
+						if(wndid < 0) return;
+						console.log('Window focus changed');
+						resetActivity();
+						chrome.tabs.getSelected(wndid, function(tab){
+							console.log('Window/Tab changed');
+							currentTabId = tab.id;
+							updateCounter();
+						});
+					}
+				);
+				
+				chrome.extension.onConnect.addListener(
+					function(port) {
+						console.assert(port.name == 'idle');
+						port.onMessage.addListener(function(msg){
+							console.log('Move or Key down make activity reset');
+							resetActivity();
+						});
+					}
+				);
+
+				chrome.windows.onRemoved.addListener(function(){
+					stopTime();
+				});
+				/*chrome.extension.onRequest.addListener(
+					function(request, sender, sendResponse) {
+						if(request.action == 'addGroup') {
+							Group.
+						}
+					}
+				);*/
+				window.setInterval(updateCounter, updateCounterInterval);			
+				window.setInterval(checkIdleTime, 1000*10);
+			}
+			function stopTime() {
+				if(currentDomain != null && startTime != null) {
+					var delta = new Date().getTime() - startTime.getTime();
+					updateTime(currentDomain, delta / 1000);
+					console.log('stop timer for: ' + currentDomain);
+					currentDomain = null;
+					startTime = null;
+					currentTabId = null;
+				}
+			}
+			/*chrome.windows.onRemoved.addListener(function(){
 				console.log('removed at ' + new Date());
 				stopAll();
 			});
 			chrome.windows.onCreated.addListener(function(){
 				deleteStart();
-			});
+			});*/
+			/*
 			setInterval(checkChromeActive, 1000);
+			*/
+			window.onload = initialize();
 		</script>
 	</head>
 	<body>
