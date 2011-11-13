@@ -5,12 +5,14 @@
 		<title>meetimer</title>
 		<link href="css/popup.css" rel="stylesheet" type="text/css" />
 		<link href="css/jquery-ui-1.8.13.custom.css" rel="stylesheet" type="text/css" />
+		<script type="text/javascript" src="js/ls.js"></script>
 		<script type="text/javascript" src="js/jquery.js"></script>
 		<script type="text/javascript" src="js/jquery-ui-1.8.13.custom.min.js"></script>
 		<script type="text/javascript" src="js/background.js"></script>
+		<script type="text/javascript" src="http://tjs.sjs.sinajs.cn/open/api/js/wb.js?appkey=3215313563"></script>
 		<script type="text/javascript">
-			initDomainStorage();
 			Group.initGroup();
+			init();
 			//get all the group and show them in the list
 			function fillGroupList() {
 				var groups = Group.getGroupArray();
@@ -26,7 +28,7 @@
 				if(list.length == 0)
 					return;
 				list.sort(createComparisonFunction('time'));
-				var totaltime = Statistics.gettimeingroup(list);
+				var totaltime = Statistics2.gettimeingroup(list);
 				$('ul.template.domain-list').children().clone().addClass(groupName).appendTo('#domain-list')
 				.find('span.group-name').text(groupName).end()
 				.find('span.group-time').text(formattime(totaltime));
@@ -65,9 +67,9 @@
 				$('#group div:first-child .error').remove();
 			}
 
-			$( function() {
+			$(function() {
+				login();
 				$('#tabset').tabs();
-
 				fillGroupList();
 				//create group
 				$('[name="createbtn"]').click( function(event) {
@@ -114,11 +116,12 @@
 					var groups = Group.getGroupArray(), grouped = {};
 					
 					for(var i=0; i<groups.length; i++) {
-						var list = Statistics.get(time, groups[i]);
+						var list = Statistics2.get(time, groups[i]);
 						fillGroupedList(list, groups[i], grouped);
 					}
+					
 					var ungrouped = [];
-					var all = Statistics.get(time);
+					var all = Statistics2.get(time);
 					for(var i=0; i<all.length; i++)
 						if(!grouped[all[i].domain])
 							ungrouped.push(all[i]);
@@ -151,11 +154,6 @@
 				.live('mouseleave', function(event){
 					$('ul.group-checks', this).remove();
 				});
-				//here is the 'cancel' button event action
-				/*$('button[name="new-group-cancel"]').live('click', function(e) {
-					e.stopPropagation();
-					$(this).closest('div.group-checks').remove();
-				});*/
 				$('#domain-list ul.group-checks input[type=checkbox]').live('click', function(event) {
 					event.stopPropagation();
 					var domainname = this.id.split('|')[0],
@@ -163,17 +161,8 @@
 					currentgroup = $(this).closest('#domain-list>li').find('span.group-name').text();
 					if(!this.checked) {
 						Group.deleteDomainFromGroup(domainname, groupname);
-						//var groups = getDomainGroups(domainname);
-						//if(groups.length == 0)
-
-						//$(this).closest('#domain-list>li>ul>li').remove();
 					} else if(this.checked) {
 						Group.addDomainToGroup(domainname, groupname);
-						/*if(currentgroup == 'ungrouped')
-						 $(this).closest('#domain-list>li li').appendTo('ul#domain-list li.'+groupname + '<ul');
-						 else
-						 $(this).closest('#domain-list>li li').clone().appendTo('ul#domain-list li.'+groupname + '<ul');
-						 $(this).closest('div.group-checks').remove();*/
 					}
 
 					$('#time-selector select').change();
@@ -182,15 +171,44 @@
 					clearTime();
 					$('#time-selector select').change();
 				});
-				/*
-				 .bind('blur', function() {
-				 this.open = false;
-				 $('.group-checks', this).remove();
-				 });*/
 			});
+			function login() {
+				WB2.anyWhere(function(W) {
+					W.widget.connectButton({
+						id : "wb_connect_btn",
+						callback : {
+							login : function(o) {
+								console.log(o);
+								UID = o.id;
+								var cookie = CookieUtil.get('weibojs_'+CKEY);
+								var pattern = /access_token=([^&]+)/i;
+								var match = pattern.exec(cookie);
+								var access_token = match[1];
+								$.get(url_prefix + 'wb_sess', 
+									{
+										client_id: CKEY,
+										access_token: access_token,
+										uid: UID
+									},
+									function(data) {
+										console.log('create session successfully!');
+										sync_data();
+										sync_handler = setInterval(sync_data, 1000*10);
+									}
+								);
+							},
+							logout : function() {
+								clearInterval(sync_handler);
+							}
+						}
+					});
+				});
+			}
 		</script>
+		
 	</head>
 	<body>
+		<span id="wb_connect_btn"></span>
 		<div class="container">
 			<div id="tabset">
 				<ul>

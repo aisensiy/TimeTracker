@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>sync</title>
+		<script type="text/javascript" src="js/jquery.js"></script>
+		<script type="text/javascript">
+			var LS = LS || {};
+			(function(g){
+				/**
+				 * Get object from localStorage
+				 */
+				function get(item) {
+					return JSON.parse(localStorage[item]);
+				}
+				
+				/**
+				 * Set object in localStorage
+				 */
+				function set(item, data) {
+					localStorage[item] = JSON.stringify(data);
+				}
+				
+				function get_sync() {
+					return get('hourglass_sync');
+				}
+				
+				function set_sync(data) {
+					set('hourglass_sync', data);
+				}
+				g.get_sync = get_sync;
+				g.set_sync = set_sync;
+				function get_unsync() {
+					return get('hourglass_sync');
+				}
+				function set_unsync(data) {
+					set('hourglass_unsync', data);
+				}
+				g.get_unsync = get_unsync;
+				g.set_unsync = set_unsync;
+			})(LS);
+			
+			url_prefix = 'http://hourglass.sinaapp.com/index.php/service/';
+			uid = 131123123;
+			client_id = 31231231;
+			/*
+			 * When login successfully, request the server to create
+			 * a session.
+			 */
+			function add_session() {
+				$.getJSON(url_prefix + 'add_session.php?uid=' + uid + '&client=' + client_id, 
+				function(data) {
+					console.log(data);
+				});
+			}
+			
+			/*
+			 * send unsync data to server
+			 * load sync
+			 */
+			function sync_data() {
+				var unsync = LS.get_unsync() || {};
+				if(!unsync) LS.set_unsync({});
+				var sync_data = Statistics2.get_sync_timestamp();
+				$.getJSON(url_prefix + 'sync_data', {'unsync': unsync, 'sync': sync_data}, function(data) {
+					if(!data.success) {
+						console.log('failed in upload data: ' + data.msg);
+						return false;
+					}
+					LS.set_unsync({});
+					LS.set_sync(data.data);
+				});
+			}
+			
+			function update_sync(data) {
+				var sync = LS.get_sync() || {};
+				for(var url in data) {
+					if(!sync[url] || sync[url].modified < data[url].modified) sync[url] = data[url];
+				}
+				LS.set_sync(sync);
+			}
+		</script>
+	</head>
+	<body>
+	</body>
+</html>

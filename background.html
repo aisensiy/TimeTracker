@@ -1,5 +1,6 @@
 <html>
 	<head>
+		<script type="text/javascript" src="js/ls.js"></script>
 		<script type="text/javascript" src="js/background.js"></script>
 		<script type="text/javascript">
 			var currentDomain = null;
@@ -70,11 +71,11 @@
 			 *update the time in the localStorage
 			 */
 			function updateTime(domain, seconds) {
-				var obj = JSON.parse(localStorage.time_tracker_ext);
-				var item = obj.domains[domain];
+				var obj = LS.get_unsync();
+				var item = obj[domain];
 				if(!item) {
 					obj = addDomains(domain);
-					item = obj.domains[domain];
+					item = obj[domain];
 				}
 				var now = new Date();
 				//add the seconds to daily
@@ -82,11 +83,11 @@
 				item["daily"][Date.date2str(now)] ? item["daily"][Date.date2str(now)]+seconds : seconds;
 				//add to the total timer
 				item['totalTime'] += seconds;
-				localStorage.time_tracker_ext = JSON.stringify(obj);
+				LS.set_unsync(obj);
 			}
 			
 			function initialize() {
-				initDomainStorage();
+				init();
 				Group.initGroup();
 				localStorage['pause'] = 'false';
 
@@ -137,6 +138,7 @@
 						}
 					}
 				);*/
+				
 				window.setInterval(updateCounter, updateCounterInterval);			
 				window.setInterval(checkIdleTime, 1000*10);
 			}

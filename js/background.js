@@ -1,6 +1,43 @@
-var root = 'time_tracker_ext';
-var domainmap = "domains";
+url_prefix = 'http://hourglass.sinaapp.com/index.php/service/';
+CKEY = 3215313563;
 
+var CookieUtil = {
+	get: function (name) {
+		var cookieName = encodeURIComponent(name) + "=",
+		cookieStart = document.cookie.indexOf(cookieName),
+		cookieValue = null;
+		if (cookieStart > -1){
+			var cookieEnd = document.cookie.indexOf(";", cookieStart)
+			if (cookieEnd == -1){
+				cookieEnd = document.cookie.length;
+			}
+			cookieValue = decodeURIComponent(document.cookie.substring(cookieStart
+			+ cookieName.length, cookieEnd));
+		}
+		return cookieValue;
+	},
+	set: function (name, value, expires, path, domain, secure) {
+		var cookieText = encodeURIComponent(name) + "=" +
+		encodeURIComponent(value);
+		if (expires instanceof Date) {
+			cookieText += "; expires=" + expires.toGMTString();
+		}
+		if (path) {
+			cookieText += "; path=" + path;
+		}
+		if (domain) {
+			cookieText += "; domain=" + domain;
+		}
+		if (secure) {
+			cookieText += "; secure";
+		}
+		document.cookie = cookieText;
+	},
+	unset: function (name, path, domain, secure) {
+		this.set(name, "", new Date(0), path, domain, secure);
+	}
+};
+			
 function createComparisonFunction(propertyName) {
 	return function(object1, object2){
 		var value1 = object1[propertyName];
@@ -152,7 +189,7 @@ var Group = {
 		}
 		return group;
 	},
- getGroup: function(group) {
+ 	getGroup: function(group) {
 		var gs = JSON.parse(localStorage.time_tracker_group);
 		return gs[group];
 	}
@@ -223,6 +260,9 @@ Date.getlastweek = function() {
 };
 
 var Statistics = {
+	/**
+	 * @return {array} [{domain: 'domain1', time: 'total time'}]
+	 */
 	gettotal: function(group) {
 		var obj = JSON.parse(localStorage.time_tracker_ext);
 		var list = [];
@@ -244,10 +284,16 @@ var Statistics = {
 		return list;
 	},
 	
+	/**
+	 * @param {string} 'total', 'today', 'yesterday', 
+	 * 	'thisweek', 'lastweek'
+	 * @see object Date static methods
+	 */
 	get: function(param, group) {
-		if(param == 'total') return Statistics.gettotal(group);
+		if(param == 'total') return this.gettotal(group);
 		var obj = JSON.parse(localStorage.time_tracker_ext);
 		var list = [];
+		//get the date list
 		var dates = Date['get'+param]();
 		if(!group) {
 			var dos = obj[domainmap];
@@ -272,9 +318,13 @@ var Statistics = {
 		return list;
 	}, 
 	gettotaltime: function(param, group) {
-		var list = Statistics.get(param, group);
-		return Statistics.gettimeingroup(list);
+		var list = this.get(param, group);
+		return this.gettimeingroup(list);
 	},
+	/**
+	 * This is a privat function used by gettotaltime
+	 * @return {number} total time of the list
+	 */
 	gettimeingroup: function(list) {
 		var total = 0;
 		for(var i=0; i<list.length; i++) 
@@ -282,27 +332,120 @@ var Statistics = {
 		return total;
 	}
 };
+var Statistics2 = {
+	/**
+	 * @return {array} [{domain: 'domain1', time: 'total time'}]
+	 */
+	gettotal: function(group) {
+		var dos = LS.get_sync();
+		var list = [];
+		//if the group argument is not given,
+		//list all the domains
+		if(!group) {
+			for(var o in dos) {
+				list.push({domain: o, time: dos[o]['total']});
+			}
+		}
+		//else if group argument is given, list the domains in group
+		else {
+			var dos = Group.getGroup(group);
+			for(var i in dos) {
+				list.push({domain: dos[i], time: dos[i]['total']});
+			}
+		}
+		return list;
+	},
+	
+	get: function(param, group) {
+		var dos = LS.get_sync();
+		var list = [];
+		//if the group argument is not given,
+		//list all the domains
+		if(!group) {
+			for(var o in dos) {
+				list.push({domain: o, time: dos[o][param]});
+			}
+		}
+		//else if group argument is given, list the domains in group
+		else {
+			var dos = Group.getGroup(group);
+			for(var i in dos) {
+				list.push({domain: dos[i], time: dos[i][param]});
+			}
+		}
+		return list;
+	},
+	/**
+	 * @param {string} 'total', 'today', 'yesterday', 
+	 * 	'thisweek', 'lastweek'
+	 * @see object Date static methods
+	 */
+	_get: function(param, group) {
+		if(param == 'total') return Statistics.gettotal(group);
+		var dos = LS.get_sync();
+		var list = [];
+		//get the date list
+		var dates = Date['get'+param]();
+		if(!group) {
+			for(var p in dos) {
+				var total = 0;
+				for(var i=0; i<dates.length; i++)
+					total += 
+					obj[domainmap][p].daily[dates[i]] ? obj[domainmap][p].daily[dates[i]]:0;
+				list.push({domain: p, time: total});
+			}
+		}
+		else {
+			var dos = Group.getGroup(group);
+			for(var j in dos) {
+				var total = 0;
+				for(var i=0; i<dates.length; i++)
+					total += 
+					obj[domainmap][dos[j]].daily[dates[i]] ? obj[domainmap][dos[j]].daily[dates[i]]:0;
+				list.push({domain: dos[j], time: total});
+			}
+		}
+		return list;
+	}, 
+	gettotaltime: function(param, group) {
+		var list = this.get(param, group);
+		return this.gettimeingroup(list);
+	},
+	/**
+	 * This is a privat function used by gettotaltime
+	 * @return {number} total time of the list
+	 */
+	gettimeingroup: function(list) {
+		var total = 0;
+		for(var i=0; i<list.length; i++) 
+			total += list[i].time;
+		return total;
+	},
+	
+	get_sync_timestamp: function() {
+		var dos = LS.get_sync(), list = [];
+		for(var url in dos) {
+			list.push({'domain': url, 'modified': dos[url].modified});
+		}
+		return list;
+	}
+};
 
 /**
  * init the localStorage object
  * here variable root is a global variable
  */
-function initDomainStorage() {
-	if(!localStorage.time_tracker_ext) {
-		var obj = {
-			"domains": {}
-		};
-		localStorage.time_tracker_ext = JSON.stringify(obj);
-	} 
-}
+// function initDomainStorage() {
+// 	
+// }
 
 /**
  * destory all the thing stored in 
  * localStorage
  */
 function destory() {
-	if(localStorage.time_tracker_ext)
-		localStorage.removeItem('time_tracker_ext');
+	if(LS.get_unsync())
+		LS.set_unsync({});
 }
 
 /**
@@ -310,12 +453,12 @@ function destory() {
  * @param {string} domain
  */
 function addDomains(domain) {
-	var obj = JSON.parse(localStorage.time_tracker_ext);
-	obj[domainmap][domain] = {
+	var obj = LS.get_unsync();
+	obj[domain] = {
 		"totalTime": 0.0,
 		"daily": {}
 	};
-	localStorage[root] = JSON.stringify(obj);
+	LS.set_unsync(obj);
 	return obj;
 }
 
@@ -324,9 +467,9 @@ function addDomains(domain) {
  * @param {string} domain
  */
 function removeDomain(domain) {
-	var obj = JSON.parse(localStorage.time_tracker_ext);
+	var obj = LS.get_unsync();
 	delete obj[domainmap][domain];
-	localStorage[root] = JSON.stringify(obj);
+	LS.set_unsync(obj);
 }
 
 /**
@@ -336,20 +479,20 @@ function removeDomain(domain) {
  * @param {string} domain the url of a domain
  */
 function starttimer(domain) {
-	var obj = JSON.parse(localStorage.time_tracker_ext);
+	var obj = LS.get_unsync();
 	//if no domain, add it
-	if(!obj[domainmap][domain]) {
+	if(!obj[domain]) {
 		obj = addDomains(domain);
 	}
-	var d = obj[domainmap][domain];
+	var d = obj[domain];
 	//stop all timer then start this
-	for(var dm in obj[domainmap]) {
+	for(var dm in obj) {
 		stoptimer(dm);
 	}
 	//set start the millisecond of now
 	d['start'] = (new Date()).getTime();
 	//persist the object
-	localStorage[root] = JSON.stringify(obj);
+	LS.set_unsync(obj);
 }
 
 /**
@@ -357,8 +500,8 @@ function starttimer(domain) {
  * and delete the start property.
  */
 function stoptimer(domain) {
-	var obj = JSON.parse(localStorage.time_tracker_ext);
-	var item = obj[domainmap][domain];
+	var obj = LS.get_unsync();
+	var item = obj[domain];
 	if(!item.start)
 		return;
 	var now = new Date();
@@ -376,17 +519,17 @@ function stoptimer(domain) {
 	item['totalTime'] += secs;
 	//console.log('stop timer at ' + domain + ' ' + new Date() + ' :' + secs / 10.0 + 's');
 	//persist the object
-	localStorage.time_tracker_ext = JSON.stringify(obj);
+	LS.set_unsync(obj);
 }
 
 function clearTime() {
-	var obj = JSON.parse(localStorage.time_tracker_ext);
-	for( var d in obj[domainmap])
-		obj[domainmap][d] = {
+	var obj = LS.get_unsync();
+	for( var d in obj)
+		obj[d] = {
 			"totalTime": 0.0,
 			"daily": {}
 		};
-	localStorage[root] = JSON.stringify(obj);
+	LS.set_unsync(obj);
 }
 /**
  * get the domain from a url
@@ -421,13 +564,13 @@ function checkChromeActive() {
 	});
 }
 function stopAll() {
-	var obj = JSON.parse(localStorage.time_tracker_ext);
-	for(var d in obj[domainmap]) {
+	var obj = LS.get_unsync();
+	for(var d in obj) {
 		stoptimer(d);
 	}
 }
 function deleteStart() {
-	var obj = JSON.parse(localStorage.time_tracker_ext);
+	var obj = LS.get_unsync();
 	for(var d in obj[domainmap]) {
 		delete d.start;
 	}
@@ -439,7 +582,7 @@ function deleteStart() {
  * control start or stop timer.
  */
 function setstatus() {
-	var obj = JSON.parse(localStorage.time_tracker_ext);
+	var obj = LS.get_unsync();
 	var ourl = window.oldurl,
 	nurl = window.url,
 	of = window.oldFocus,
@@ -473,3 +616,44 @@ function setstatus() {
 	}
 }
 
+/*
+ * When login successfully, request the server to create
+ * a session.
+ */
+function add_session() {
+	$.getJSON(url_prefix + 'add_session.php?uid=' + uid + '&client=' + appkey, 
+	function(data) {
+		console.log(data);
+	});
+}
+
+/*
+ * send unsync data to server
+ * load sync
+ */
+function sync_data() {
+	var unsync = LS.get_unsync();
+	if(!unsync) LS.set_unsync({});
+	$.post(url_prefix + 'sync_data', {'unsync': JSON.stringify(unsync), 'sync': JSON.stringify(Statistics2.get_sync_timestamp())}, function(data) {
+		if(!data.success) {
+			console.log('failed in upload data: ' + data.msg);
+			return false;
+		}
+		update_sync(data.data);
+		LS.set_unsync({});
+	}, "json");
+}
+
+function update_sync(data) {
+	var sync = LS.get_sync();
+	for(var url in data) {
+		if(!sync[url] || sync[url].modified < data[url].modified) sync[url] = data[url];
+	}
+	console.log('updated sync now!');
+	LS.set_sync(sync);
+}
+
+function init() {
+	if(!LS.get_sync()) LS.set_sync({});
+	if(!LS.get_unsync()) LS.set_unsync({});
+}
