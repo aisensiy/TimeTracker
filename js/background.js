@@ -337,40 +337,41 @@ var Statistics2 = {
 	 * @return {array} [{domain: 'domain1', time: 'total time'}]
 	 */
 	gettotal: function(group) {
-		var dos = LS.get_sync();
+		var sync = LS.get_sync();
 		var list = [];
 		//if the group argument is not given,
 		//list all the domains
 		if(!group) {
-			for(var o in dos) {
-				list.push({domain: o, time: dos[o]['total']});
+			for(var o in sync) {
+				list.push({domain: o, time: sync[o]['total']});
 			}
 		}
 		//else if group argument is given, list the domains in group
 		else {
 			var dos = Group.getGroup(group);
-			for(var i in dos) {
-				list.push({domain: dos[i], time: dos[i]['total']});
+			for(var i=0, n=dos.length; i<n; i++) {
+				list.push({domain: dos[i], time: sync[dos[i]]['total']});
 			}
 		}
 		return list;
 	},
 	
 	get: function(param, group) {
-		var dos = LS.get_sync();
+		var sync = LS.get_sync();
 		var list = [];
 		//if the group argument is not given,
 		//list all the domains
 		if(!group) {
-			for(var o in dos) {
-				list.push({domain: o, time: dos[o][param]});
+			for(var o in sync) {
+				list.push({domain: o, time: sync[o][param]});
 			}
 		}
 		//else if group argument is given, list the domains in group
 		else {
 			var dos = Group.getGroup(group);
-			for(var i in dos) {
-				list.push({domain: dos[i], time: dos[i][param]});
+			for(var i=0, n=dos.length; i<n; i++) {
+				if(sync[dos[i]]) 
+					list.push({domain: dos[i], time: sync[dos[i]][param]});
 			}
 		}
 		return list;
