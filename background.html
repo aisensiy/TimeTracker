@@ -1,5 +1,6 @@
 <html>
 	<head>
+		<script type="text/javascript" src="js/jquery.js"></script>
 		<script type="text/javascript" src="js/ls.js"></script>
 		<script type="text/javascript" src="js/background.js"></script>
 		<script type="text/javascript">
@@ -127,6 +128,19 @@
 						});
 					}
 				);
+				
+				chrome.extension.onRequest.addListener(
+					function(request) {
+						if(request.name == 'login') {
+							sync_data();
+							sync_handler = setInterval(sync_data, 1000*600);
+							console.log('start sync!');
+						} else if(request.name == 'logout'){
+							clearInterval(sync_hanler);
+							console.log('stop sync!');
+						}
+					}
+				);
 
 				chrome.windows.onRemoved.addListener(function(){
 					stopTime();
@@ -142,6 +156,7 @@
 				window.setInterval(updateCounter, updateCounterInterval);			
 				window.setInterval(checkIdleTime, 1000*10);
 			}
+			
 			function stopTime() {
 				if(currentDomain != null && startTime != null) {
 					var delta = new Date().getTime() - startTime.getTime();

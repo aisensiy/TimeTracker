@@ -39,6 +39,9 @@
 						.find('span.domain-time').text(formattime(list[i].time));
 					if(grouped != undefined)
 						grouped[list[i].domain] = 1;
+					else {
+						if(list[i].time < 120 && i > 20) break;
+					}
 				}
 			}
 
@@ -184,21 +187,23 @@
 								var pattern = /access_token=([^&]+)/i;
 								var match = pattern.exec(cookie);
 								var access_token = match[1];
-								$.get(url_prefix + 'wb_sess', 
+								$.getJSON(url_prefix + 'wb_sess', 
 									{
 										client_id: CKEY,
 										access_token: access_token,
 										uid: UID
 									},
 									function(data) {
-										console.log('create session successfully!');
-										sync_data();
-										sync_handler = setInterval(sync_data, 1000*300);
+										if(data.success) {
+											console.log('create session successfully!');
+											chrome.extension.sendRequest({name: "login"});
+										}
 									}
 								);
 							},
 							logout : function() {
-								clearInterval(sync_handler);
+								console.log('Log out!');
+								chrome.extension.sendRequest({name: "logout"});
 							}
 						}
 					});

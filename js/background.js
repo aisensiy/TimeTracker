@@ -189,9 +189,13 @@ var Group = {
 		}
 		return group;
 	},
- 	getGroup: function(group) {
+ 	getGroup: function(group, json) {
 		var gs = JSON.parse(localStorage.time_tracker_group);
-		return gs[group];
+		if(!json) return gs[group];
+		var result = {};
+		for(var i=0, n=gs[group].length; i<n; i++)
+			result[gs[group][i]] = 1;
+		return result;
 	}
 };
 
@@ -203,7 +207,7 @@ var Group = {
  */
 Date.date2str = function(date) {
 	var str = "";
-	str+=date.getFullYear()+"-" + (date.getMonth()+1) + "-" + date.getDate() + " ";
+	str+=date.getFullYear()+"-" + (date.getMonth()+1) + "-" + date.getDate();
 	return str;
 };
 /**
@@ -350,31 +354,47 @@ var Statistics2 = {
 		else {
 			var dos = Group.getGroup(group);
 			for(var i=0, n=dos.length; i<n; i++) {
-				list.push({domain: dos[i], time: sync[dos[i]]['total']});
+				list.push({domain: dos[i], time: sync[dos[i]]['total'] || 0});
 			}
 		}
 		return list;
 	},
 	
 	get: function(param, group) {
+		if(param == 'total') return this.gettotal(group);
 		var sync = LS.get_sync();
 		var list = [];
-		//if the group argument is not given,
-		//list all the domains
-		if(!group) {
-			for(var o in sync) {
-				list.push({domain: o, time: sync[o][param]});
-			}
+		//get the date list
+		var dates = Date['get'+param]();
+		
+		var dos = group ? Group.getGroup(group, true) : sync;
+		for(var p in dos) {
+			var total = 0;
+			for(var i=0; i<dates.length; i++) {
+				total += sync[p][dates[i]] || 0;
+			}	
+			list.push({domain: p, time: total});
 		}
-		//else if group argument is given, list the domains in group
-		else {
-			var dos = Group.getGroup(group);
-			for(var i=0, n=dos.length; i<n; i++) {
-				if(sync[dos[i]]) 
-					list.push({domain: dos[i], time: sync[dos[i]][param]});
-			}
-		}
+		
 		return list;
+		
+		// var list = [];
+		// //if the group argument is not given,
+		// //list all the domains
+		// if(!group) {
+			// for(var o in sync) {
+				// list.push({domain: o, time: sync[o][param]});
+			// }
+		// }
+		// //else if group argument is given, list the domains in group
+		// else {
+			// var dos = Group.getGroup(group);
+			// for(var i=0, n=dos.length; i<n; i++) {
+				// if(sync[dos[i]]) 
+					// list.push({domain: dos[i], time: sync[dos[i]][param]});
+			// }
+		// }
+		// return list;
 	},
 	/**
 	 * @param {string} 'total', 'today', 'yesterday', 
