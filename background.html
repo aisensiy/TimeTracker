@@ -12,10 +12,10 @@
 			//init();
 			//Group.initGroup();
 			function checkIdleTime(seconds) {
-				console.log('Checking idle time.');
+				//console.log('Checking idle time.');
 				lastActivitySeconds += 10;
 				console.log('Last activity was ' + lastActivitySeconds + ' seconds ago.');
-				console.log('Paused = ' + localStorage['pause']);
+				//console.log('Paused = ' + localStorage['pause']);
 				if(localStorage['pause'] == 'false' && lastActivitySeconds > 60) 
 					pause();
 			}
@@ -52,13 +52,13 @@
 						if(currentDomain == null) {
 							currentDomain = domain;
 							startTime = new Date();
-							console.log('start timer for: ' + currentDomain);
+							//console.log('start timer for: ' + currentDomain);
 							return;
 						}
 						var delta = new Date().getTime() - startTime.getTime();
 						if(delta < updateCounterInterval * 100) {
 							updateTime(currentDomain, delta / 1000);
-							console.log("End timer for: " + currentDomain + ' start timer for: ' + domain);
+							//console.log("End timer for: " + currentDomain + ' start timer for: ' + domain);
 						}
 						else {
 							console.log('It is a invalid update for its too big.');
@@ -80,10 +80,10 @@
 				}
 				var now = new Date();
 				//add the seconds to daily
-				item["daily"][Date.date2str(now)] =
-				item["daily"][Date.date2str(now)] ? item["daily"][Date.date2str(now)]+seconds : seconds;
+				item[Date.date2str(now)] =
+				item[Date.date2str(now)] ? item[Date.date2str(now)]+seconds : seconds;
 				//add to the total timer
-				item['totalTime'] += seconds;
+				item['total'] += seconds;
 				LS.set_unsync(obj);
 			}
 			
@@ -93,7 +93,7 @@
 				localStorage['pause'] = 'false';
 
 				chrome.tabs.onSelectionChanged.addListener(function(tabid, seclectInfo){
-					console.log('Tab changed');
+					// console.log('Tab changed');
 					resetActivity();
 					currentTabId = tabid;
 					updateCounter();
@@ -101,7 +101,7 @@
 
 				chrome.tabs.onUpdated.addListener(function(tabid, changeInfo, tab){
 					if(currentTabId == tabid) {
-						console.log('tab update');
+						// console.log('tab update');
 						updateCounter();
 					}
 				});
@@ -123,60 +123,47 @@
 					function(port) {
 						console.assert(port.name == 'idle');
 						port.onMessage.addListener(function(msg){
-							console.log('Move or Key down make activity reset');
+							// console.log('Move or Key down make activity reset');
 							resetActivity();
 						});
 					}
 				);
-				
+				/*
 				chrome.extension.onRequest.addListener(
 					function(request) {
-						if(request.name == 'login') {
+						if(request.name == 'login' && localStorage.sync_running == 'false') {
 							sync_data();
-							sync_handler = setInterval(sync_data, 1000*600);
+							sync_handler = setInterval(sync_data , 1000*600);
+							localStorage.sync_running = 'true';
 							console.log('start sync!');
-						} else if(request.name == 'logout'){
+						} else if(request.name == 'logout') {
 							clearInterval(sync_hanler);
 							console.log('stop sync!');
 						}
 					}
 				);
+				*/
 
 				chrome.windows.onRemoved.addListener(function(){
 					stopTime();
 				});
-				/*chrome.extension.onRequest.addListener(
-					function(request, sender, sendResponse) {
-						if(request.action == 'addGroup') {
-							Group.
-						}
-					}
-				);*/
 				
 				window.setInterval(updateCounter, updateCounterInterval);			
 				window.setInterval(checkIdleTime, 1000*10);
+				sync_data();
+				window.setInterval(sync_data, 1000 * 60 * 60);
 			}
 			
 			function stopTime() {
 				if(currentDomain != null && startTime != null) {
 					var delta = new Date().getTime() - startTime.getTime();
 					updateTime(currentDomain, delta / 1000);
-					console.log('stop timer for: ' + currentDomain);
+					// console.log('stop timer for: ' + currentDomain);
 					currentDomain = null;
 					startTime = null;
 					currentTabId = null;
 				}
 			}
-			/*chrome.windows.onRemoved.addListener(function(){
-				console.log('removed at ' + new Date());
-				stopAll();
-			});
-			chrome.windows.onCreated.addListener(function(){
-				deleteStart();
-			});*/
-			/*
-			setInterval(checkChromeActive, 1000);
-			*/
 			window.onload = initialize();
 		</script>
 	</head>

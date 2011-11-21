@@ -340,94 +340,58 @@ var Statistics2 = {
 	/**
 	 * @return {array} [{domain: 'domain1', time: 'total time'}]
 	 */
-	gettotal: function(group) {
-		var sync = LS.get_sync();
+	_gettotal: function(group, data) {
 		var list = [];
 		//if the group argument is not given,
 		//list all the domains
 		if(!group) {
-			for(var o in sync) {
-				list.push({domain: o, time: sync[o]['total']});
+			for(var o in data) {
+				list.push({domain: o, time: data[o]['total']});
 			}
 		}
 		//else if group argument is given, list the domains in group
 		else {
 			var dos = Group.getGroup(group);
 			for(var i=0, n=dos.length; i<n; i++) {
-				list.push({domain: dos[i], time: sync[dos[i]]['total'] || 0});
+				list.push({domain: dos[i], time: data[dos[i]] && data[dos[i]]['total'] || 0});
 			}
 		}
 		return list;
 	},
 	
 	get: function(param, group) {
-		if(param == 'total') return this.gettotal(group);
-		var sync = LS.get_sync();
+		var sync = this._get(param, group, LS.get_sync()),
+			unsync = this._get(param, group, LS.get_unsync());
+		var list = [], map = {};
+		for(var i=0, n=sync.length; i<n; i++) {
+			map[sync[i].domain] = sync[i].time;
+		}
+		for(var i=0, n=unsync.length; i<n; i++) {
+			map[unsync[i].domain] = (map[unsync[i].domain] || 0) + unsync[i].time;
+		}
+		for(var d in map) {
+			list.push({domain: d, time: map[d]});
+		}
+		return list;
+	},
+	
+	_get: function(param, group, data) {
+		if(param == 'total') return this._gettotal(group, data);
 		var list = [];
 		//get the date list
 		var dates = Date['get'+param]();
 		
-		var dos = group ? Group.getGroup(group, true) : sync;
+		var dos = group ? Group.getGroup(group, true) : data;
 		for(var p in dos) {
 			var total = 0;
 			for(var i=0; i<dates.length; i++) {
-				total += sync[p][dates[i]] || 0;
+				total += data[p] && data[p][dates[i]] || 0;
 			}	
 			list.push({domain: p, time: total});
 		}
 		
 		return list;
-		
-		// var list = [];
-		// //if the group argument is not given,
-		// //list all the domains
-		// if(!group) {
-			// for(var o in sync) {
-				// list.push({domain: o, time: sync[o][param]});
-			// }
-		// }
-		// //else if group argument is given, list the domains in group
-		// else {
-			// var dos = Group.getGroup(group);
-			// for(var i=0, n=dos.length; i<n; i++) {
-				// if(sync[dos[i]]) 
-					// list.push({domain: dos[i], time: sync[dos[i]][param]});
-			// }
-		// }
-		// return list;
 	},
-	/**
-	 * @param {string} 'total', 'today', 'yesterday', 
-	 * 	'thisweek', 'lastweek'
-	 * @see object Date static methods
-	 */
-	_get: function(param, group) {
-		if(param == 'total') return Statistics.gettotal(group);
-		var dos = LS.get_sync();
-		var list = [];
-		//get the date list
-		var dates = Date['get'+param]();
-		if(!group) {
-			for(var p in dos) {
-				var total = 0;
-				for(var i=0; i<dates.length; i++)
-					total += 
-					obj[domainmap][p].daily[dates[i]] ? obj[domainmap][p].daily[dates[i]]:0;
-				list.push({domain: p, time: total});
-			}
-		}
-		else {
-			var dos = Group.getGroup(group);
-			for(var j in dos) {
-				var total = 0;
-				for(var i=0; i<dates.length; i++)
-					total += 
-					obj[domainmap][dos[j]].daily[dates[i]] ? obj[domainmap][dos[j]].daily[dates[i]]:0;
-				list.push({domain: dos[j], time: total});
-			}
-		}
-		return list;
-	}, 
 	gettotaltime: function(param, group) {
 		var list = this.get(param, group);
 		return this.gettimeingroup(list);
@@ -444,11 +408,11 @@ var Statistics2 = {
 	},
 	
 	get_sync_timestamp: function() {
-		var dos = LS.get_sync(), list = [];
+		var dos = LS.get_sync(), map = {};
 		for(var url in dos) {
-			list.push({'domain': url, 'modified': dos[url].modified});
+			map[url] = dos[url].modified;
 		}
-		return list;
+		return map;
 	}
 };
 
@@ -476,8 +440,7 @@ function destory() {
 function addDomains(domain) {
 	var obj = LS.get_unsync();
 	obj[domain] = {
-		"totalTime": 0.0,
-		"daily": {}
+		"total": 0.0
 	};
 	LS.set_unsync(obj);
 	return obj;
@@ -611,24 +574,24 @@ function setstatus() {
 	//if i just get the chrome to top most, start track nurl
 	if(!of && nf && nurl) {
 		starttimer(nurl);
-		console.log('from unfocus to focus: ' + nurl + ' start at ' + new Date());
+		//console.log('from unfocus to focus: ' + nurl + ' start at ' + new Date());
 	}
 	//if i close the chrome 
 	else if(of && !nf && nurl) {
 		stoptimer(nurl);
-		console.log('ourl: ' + ourl + ' nurl: ' + nurl);
-		console.log('from focus to unfocus: ' + ourl + ' stop at ' + new Date());
+		//console.log('ourl: ' + ourl + ' nurl: ' + nurl);
+		//console.log('from focus to unfocus: ' + ourl + ' stop at ' + new Date());
 	}
 	//if i change the url(by change tab or update tab) 
 	else if(of && nf) {
 		if(ourl != nurl) {
-			console.log('change focus at ' + new Date());
+			//console.log('change focus at ' + new Date());
 			if(ourl) {
 				stoptimer(ourl);
-				console.log('stop ' + ourl);
+				//console.log('stop ' + ourl);
 			}
 			starttimer(nurl);
-			console.log('start ' + nurl);
+			//console.log('start ' + nurl);
 		}
 		else {
 			stoptimer(ourl);
@@ -653,8 +616,12 @@ function add_session() {
  * load sync
  */
 function sync_data() {
+	if(localStorage.login !== 'true') return;
 	var unsync = LS.get_unsync();
-	if(!unsync) LS.set_unsync({});
+	if(!unsync) {
+		LS.set_unsync({});
+		return;
+	}
 	$.post(url_prefix + 'sync_data', {'unsync': JSON.stringify(unsync), 'sync': JSON.stringify(Statistics2.get_sync_timestamp())}, function(data) {
 		if(!data.success) {
 			console.log('failed in upload data: ' + data.msg);
@@ -670,8 +637,8 @@ function update_sync(data) {
 	for(var url in data) {
 		if(!sync[url] || sync[url].modified < data[url].modified) sync[url] = data[url];
 	}
-	console.log('updated sync now!');
 	LS.set_sync(sync);
+	console.log('updated sync now!');
 }
 
 function init() {

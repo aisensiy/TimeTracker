@@ -196,14 +196,16 @@
 									function(data) {
 										if(data.success) {
 											console.log('create session successfully!');
-											chrome.extension.sendRequest({name: "login"});
+											localStorage.login = 'true';
+											//chrome.extension.sendRequest({name: "login"});
 										}
 									}
 								);
 							},
 							logout : function() {
 								console.log('Log out!');
-								chrome.extension.sendRequest({name: "logout"});
+								localStorage.login = 'false';
+								//chrome.extension.sendRequest({name: "logout"});
 							}
 						}
 					});
