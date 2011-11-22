@@ -629,6 +629,7 @@ function sync_data() {
 		}
 		update_sync(data.data);
 		LS.set_unsync({});
+		localStorage.last_update = '' + new Date();
 	}, "json");
 }
 

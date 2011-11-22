@@ -128,21 +128,6 @@
 						});
 					}
 				);
-				/*
-				chrome.extension.onRequest.addListener(
-					function(request) {
-						if(request.name == 'login' && localStorage.sync_running == 'false') {
-							sync_data();
-							sync_handler = setInterval(sync_data , 1000*600);
-							localStorage.sync_running = 'true';
-							console.log('start sync!');
-						} else if(request.name == 'logout') {
-							clearInterval(sync_hanler);
-							console.log('stop sync!');
-						}
-					}
-				);
-				*/
 
 				chrome.windows.onRemoved.addListener(function(){
 					stopTime();
