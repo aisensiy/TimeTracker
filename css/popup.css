@@ -94,3 +94,18 @@ span.group-name {
 	background-color: #ffcece;
 	padding: 0.2em;
 }
+
+.info {
+    background: none repeat scroll 0 0 #D5EDF8;
+    border-color: #92CAE4;
+    color: #205791;
+}
+.error, .alert {
+    background: none repeat scroll 0 0 #FBE3E4;
+    border-color: #FBC2C4;
+    color: #8A1F11;
+}
+.loading {
+	padding-left: 18px;
+	background: url(images/load.gif) left center no-repeat;
+}

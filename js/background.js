@@ -615,21 +615,20 @@ function add_session() {
  * send unsync data to server
  * load sync
  */
-function sync_data() {
+function sync_data(callback) {
 	if(localStorage.login !== 'true') return;
 	var unsync = LS.get_unsync();
-	if(!unsync) {
-		LS.set_unsync({});
-		return;
-	}
+	if(!unsync) LS.set_unsync({});
 	$.post(url_prefix + 'sync_data', {'unsync': JSON.stringify(unsync), 'sync': JSON.stringify(Statistics2.get_sync_timestamp())}, function(data) {
 		if(!data.success) {
 			console.log('failed in upload data: ' + data.msg);
+			callback(false);
 			return false;
 		}
 		update_sync(data.data);
 		LS.set_unsync({});
-		localStorage.last_update = '' + new Date();
+		localStorage.last_update = '' + new Date().getTime();
+		callback(true);
 	}, "json");
 }
 

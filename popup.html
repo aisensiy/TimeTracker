@@ -170,9 +170,17 @@
 
 					$('#time-selector select').change();
 				});
-				$('button[name="clear"]').click( function() {
-					clearTime();
-					$('#time-selector select').change();
+				$('button[name="sync"]').click( function() {
+					$(this).addClass('loading');
+					sync_data(function(result) {
+						if(result) {
+							$('<p id="info" class="info">sync successfully!</p>').hide().insertBefore('#domain-list').slideDown(300).delay(1000).slideUp(300);
+							$('#time-selector select').change();
+						} else {
+							$('<p id="info" class="error">failed in sync, please sync sooner.</p>').hide().insertBefore('#domain-list').slideDown(300).delay(1000).slideUp(300);
+						}
+						$('button[name="sync"]').removeClass('loading');
+					});
 				});
 			});
 			function login() {
@@ -243,8 +251,8 @@
 							<option value="lastweek">lastweek</option>
 							<option value="total">total</option>
 						</select>
-						<button type="button" name="clear">
-							Clear All
+						<button type="button" name="sync">
+							synchronize
 						</button>
 					</div>
 					<ul id="domain-list">

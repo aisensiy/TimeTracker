@@ -128,15 +128,22 @@
 						});
 					}
 				);
+				
+				chrome.windows.onCreated.addListener(function() {					
+					setTimeout(sync_data, 1000 * 10);
+				});
 
 				chrome.windows.onRemoved.addListener(function(){
 					stopTime();
+					sync_data();
 				});
 				
 				window.setInterval(updateCounter, updateCounterInterval);			
 				window.setInterval(checkIdleTime, 1000*10);
-				sync_data();
-				window.setInterval(sync_data, 1000 * 60 * 60);
+				window.setInterval(function() {
+					if(+new Date() - +localStorage.last_update < 1000 * 60 * 60) return;
+					sync_data();
+				}, 1000 * 60 * 10);
 			}
 			
 			function stopTime() {
