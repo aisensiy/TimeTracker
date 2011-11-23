@@ -620,6 +620,12 @@ function sync_data(callback) {
 	var unsync = LS.get_unsync();
 	if(!unsync) LS.set_unsync({});
 	$.post(url_prefix + 'sync_data', {'unsync': JSON.stringify(unsync), 'sync': JSON.stringify(Statistics2.get_sync_timestamp())}, function(data) {
+		try {
+			data = JSON.parse(data);
+		} catch(e) {
+			callback(false);
+			return;
+		}
 		if(!data.success) {
 			console.log('failed in upload data: ' + data.msg);
 			callback(false);
@@ -629,7 +635,7 @@ function sync_data(callback) {
 		LS.set_unsync({});
 		localStorage.last_update = '' + new Date().getTime();
 		callback(true);
-	}, "json");
+	}, "text");
 }
 
 function update_sync(data) {
