@@ -623,18 +623,18 @@ function sync_data(callback) {
 		try {
 			data = JSON.parse(data);
 		} catch(e) {
-			callback(false);
+			callback && callback(false);
 			return;
 		}
 		if(!data.success) {
 			console.log('failed in upload data: ' + data.msg);
-			callback(false);
+			callback && callback(false);
 			return false;
 		}
 		update_sync(data.data);
 		LS.set_unsync({});
 		localStorage.last_update = '' + new Date().getTime();
-		callback(true);
+		callback && callback(true);
 	}, "text");
 }
 
@@ -650,4 +650,10 @@ function update_sync(data) {
 function init() {
 	if(!LS.get_sync()) LS.set_sync({});
 	if(!LS.get_unsync()) LS.set_unsync({});
+}
+
+function fireEvent(element,event){
+	var evt = document.createEvent("HTMLEvents");
+	evt.initEvent(event, true, true );
+	return !element.dispatchEvent(evt);
 }

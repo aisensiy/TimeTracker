@@ -5,6 +5,7 @@
 		<title>meetimer</title>
 		<link href="css/popup.css" rel="stylesheet" type="text/css" />
 		<link href="css/jquery-ui-1.8.13.custom.css" rel="stylesheet" type="text/css" />
+		<link href="http://js.t.sinajs.cn/t3//style/css/common/card.css?version=20110824" type="text/css" rel="stylesheet">
 		<script type="text/javascript" src="js/ls.js"></script>
 		<script type="text/javascript" src="js/jquery.js"></script>
 		<script type="text/javascript" src="js/jquery-ui-1.8.13.custom.min.js"></script>
@@ -69,9 +70,28 @@
 			function hideError() {
 				$('#group div:first-child .error').remove();
 			}
-
+			
+			function clone_wb_btn() {
+				$('#wb_connect_btn').remove();
+				var bgPage = chrome.extension.getBackgroundPage();
+				var btn = bgPage.document.getElementById('wb_connect_btn');
+				$(document.body).prepend($(btn).clone());
+			}
+			
 			$(function() {
-				login();
+				chrome.extension.onRequest.addListener(function(request) {
+					if(request.name === 'login_pop' || request.name === 'logout_pop') {
+						alert('respone');
+						clone_wb_btn();
+					}
+				});
+				clone_wb_btn();
+				$('#wb_connect_btn').live('click', function(e) {
+					chrome.extension.sendRequest({name: "login_bg"});
+				});
+				$('#wb_connect_btn .weibo_widget_connect_disconnect').live('click', function(e) {
+					chrome.extension.sendRequest({name: "logout_bg"});
+				});
 				$('#tabset').tabs();
 				fillGroupList();
 				//create group
@@ -223,7 +243,8 @@
 		
 	</head>
 	<body>
-		<span id="wb_connect_btn"></span>
+		<span id="wb_connect_btn">
+		</span>
 		<div class="container">
 			<div id="tabset">
 				<ul>

@@ -3,6 +3,7 @@
 		<script type="text/javascript" src="js/jquery.js"></script>
 		<script type="text/javascript" src="js/ls.js"></script>
 		<script type="text/javascript" src="js/background.js"></script>
+		<script type="text/javascript" src="http://tjs.sjs.sinajs.cn/open/api/js/wb.js?appkey=3215313563"></script>
 		<script type="text/javascript">
 			var currentDomain = null;
 			var startTime = null;
@@ -14,7 +15,7 @@
 			function checkIdleTime(seconds) {
 				//console.log('Checking idle time.');
 				lastActivitySeconds += 10;
-				console.log('Last activity was ' + lastActivitySeconds + ' seconds ago.');
+				//console.log('Last activity was ' + lastActivitySeconds + ' seconds ago.');
 				//console.log('Paused = ' + localStorage['pause']);
 				if(localStorage['pause'] == 'false' && lastActivitySeconds > 60) 
 					pause();
@@ -43,7 +44,7 @@
 						var domain = getDomain(tab.url);
 						//If the domain is invalid, don't update counter
 						if(domain == null) {
-							console.log('Unable to update counter with url: ' + tab.url);
+							//console.log('Unable to update counter with url: ' + tab.url);
 							return;
 						}
 						//We can't update the counter when the global currentDomain is null,
@@ -87,10 +88,58 @@
 				LS.set_unsync(obj);
 			}
 			
+			
+			
 			function initialize() {
+				WB2.anyWhere(function(W) {
+					W.widget.connectButton({
+						id : "wb_connect_btn",
+						callback : {
+							login : function(o) {
+								console.log(o);
+								UID = o.id;
+								var cookie = CookieUtil.get('weibojs_'+CKEY);
+								var pattern = /access_token=([^&]+)/i;
+								var match = pattern.exec(cookie);
+								var access_token = match[1];
+								$.getJSON(url_prefix + 'wb_sess', 
+									{
+										client_id: CKEY,
+										access_token: access_token,
+										uid: UID
+									},
+									function(data) {
+										if(data.success) {
+											console.log('create session successfully!');
+											localStorage.login = 'true';
+											chrome.extension.sendRequest({name: "login"});
+										}
+									}
+								);
+							},
+							logout : function() {
+								console.log('Log out!');
+								localStorage.login = 'false';
+								chrome.extension.sendRequest({name: "logout"});
+							}
+						}
+					});
+				});
 				init();
 				Group.initGroup();
 				localStorage['pause'] = 'false';
+				
+				chrome.extension.onRequest.addListener(function(request) {
+					if(request.name === 'login_bg') {
+						var elt = $('#wb_connect_btn div')[0];
+						fireEvent(elt, 'click');
+						chrome.extension.sendRequest({name: "login_pop"});
+					} else if (request.name == 'logout_bg') {
+						var elt = $('#wb_connect_btn .weibo_widget_connect_disconnect')[0];
+						fireEvent(elt, 'click');
+						chrome.extension.sendRequest({name: "logout_pop"});
+					}
+				});
 
 				chrome.tabs.onSelectionChanged.addListener(function(tabid, seclectInfo){
 					// console.log('Tab changed');
@@ -109,10 +158,10 @@
 				chrome.windows.onFocusChanged.addListener(
 					function(wndid) {
 						if(wndid < 0) return;
-						console.log('Window focus changed');
+						//console.log('Window focus changed');
 						resetActivity();
 						chrome.tabs.getSelected(wndid, function(tab){
-							console.log('Window/Tab changed');
+							// console.log('Window/Tab changed');
 							currentTabId = tab.id;
 							updateCounter();
 						});
@@ -129,7 +178,7 @@
 					}
 				);
 				
-				chrome.windows.onCreated.addListener(function() {					
+				chrome.windows.onCreated.addListener(function() {
 					setTimeout(sync_data, 1000 * 10);
 				});
 
@@ -156,9 +205,11 @@
 					currentTabId = null;
 				}
 			}
-			window.onload = initialize();
+			
+			window.onload = initialize;
 		</script>
 	</head>
 	<body>
+		<span id="wb_connect_btn"></span>
 	</body>
 </html>
