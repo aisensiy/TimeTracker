@@ -57,8 +57,9 @@
 							return;
 						}
 						var delta = new Date().getTime() - startTime.getTime();
+						// 这里检查数据是不是过于庞大，如果是的话则被认定为异常
 						if(delta < updateCounterInterval * 100) {
-							updateTime(currentDomain, delta / 1000);
+							updateTime(currentDomain, parsetInt(delta / 1000));
 							//console.log("End timer for: " + currentDomain + ' start timer for: ' + domain);
 						}
 						else {
@@ -89,8 +90,29 @@
 			}
 			
 			
-			
+			function sea_login() {
+				if(!window.UID) return;
+				var cookie = CookieUtil.get('weibojs_'+CKEY);
+				var pattern = /access_token=([^&]+)/i;
+				var match = pattern.exec(cookie);
+				var access_token = match[1];
+				$.getJSON(url_prefix + 'wb_sess', 
+					{
+						client_id: CKEY,
+						access_token: access_token,
+						uid: UID
+					},
+					function(data) {
+						if(data.success) {
+							console.log('create session successfully!');
+							localStorage.login = 'true';
+							chrome.extension.sendRequest({name: "login"});
+						}
+					}
+				);
+			}
 			function initialize() {
+				if(WB2.checkLogin()) sea_login();
 				WB2.anyWhere(function(W) {
 					W.widget.connectButton({
 						id : "wb_connect_btn",
@@ -98,24 +120,7 @@
 							login : function(o) {
 								console.log(o);
 								UID = o.id;
-								var cookie = CookieUtil.get('weibojs_'+CKEY);
-								var pattern = /access_token=([^&]+)/i;
-								var match = pattern.exec(cookie);
-								var access_token = match[1];
-								$.getJSON(url_prefix + 'wb_sess', 
-									{
-										client_id: CKEY,
-										access_token: access_token,
-										uid: UID
-									},
-									function(data) {
-										if(data.success) {
-											console.log('create session successfully!');
-											localStorage.login = 'true';
-											chrome.extension.sendRequest({name: "login"});
-										}
-									}
-								);
+								sea_login();
 							},
 							logout : function() {
 								console.log('Log out!');
@@ -198,7 +203,7 @@
 			function stopTime() {
 				if(currentDomain != null && startTime != null) {
 					var delta = new Date().getTime() - startTime.getTime();
-					updateTime(currentDomain, delta / 1000);
+					updateTime(currentDomain, parsetInt(delta / 1000));
 					// console.log('stop timer for: ' + currentDomain);
 					currentDomain = null;
 					startTime = null;
