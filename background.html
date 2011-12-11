@@ -1,5 +1,6 @@
 <html>
 	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<script type="text/javascript" src="js/jquery.js"></script>
 		<script type="text/javascript" src="js/ls.js"></script>
 		<script type="text/javascript" src="js/background.js"></script>
@@ -38,9 +39,9 @@
 				}
 				if(currentTabId == null) return;
 				chrome.tabs.get(currentTabId, function(tab){
-					chrome.windows.get(tab.windowId, function(window){
+					tab && chrome.windows.get(tab.windowId, function(window){
 						//If the window is not topmost, don't update counter
-						if(!window.focused) return;
+						if(window && !window.focused) return;
 						var domain = getDomain(tab.url);
 						//If the domain is invalid, don't update counter
 						if(domain == null) {
@@ -57,9 +58,8 @@
 							return;
 						}
 						var delta = new Date().getTime() - startTime.getTime();
-						// ÕâÀï¼ì²éÊı¾İÊÇ²»ÊÇ¹ıÓÚÅÓ´ó£¬Èç¹ûÊÇµÄ»°Ôò±»ÈÏ¶¨ÎªÒì³£
 						if(delta < updateCounterInterval * 100) {
-							updateTime(currentDomain, parsetInt(delta / 1000));
+							updateTime(currentDomain, Math.round(delta / 1000));
 							//console.log("End timer for: " + currentDomain + ' start timer for: ' + domain);
 						}
 						else {
@@ -90,12 +90,10 @@
 			}
 			
 			
-			function sea_login() {
+			function sae_login() {
 				if(!window.UID) return;
-				var cookie = CookieUtil.get('weibojs_'+CKEY);
-				var pattern = /access_token=([^&]+)/i;
-				var match = pattern.exec(cookie);
-				var access_token = match[1];
+				var match = /access_token=([^&]+)/i.exec(CookieUtil.get('weibojs_'+CKEY));
+				var access_token = match && match[1];
 				$.getJSON(url_prefix + 'wb_sess', 
 					{
 						client_id: CKEY,
@@ -111,25 +109,65 @@
 					}
 				);
 			}
-			function initialize() {
-				if(WB2.checkLogin()) sea_login();
+			function make_widget() {
+				$("#wb_connect_btn").html("");
 				WB2.anyWhere(function(W) {
 					W.widget.connectButton({
 						id : "wb_connect_btn",
 						callback : {
 							login : function(o) {
-								console.log(o);
 								UID = o.id;
-								sea_login();
+								sae_login();
 							},
 							logout : function() {
-								console.log('Log out!');
 								localStorage.login = 'false';
 								chrome.extension.sendRequest({name: "logout"});
 							}
 						}
 					});
 				});
+			}
+			function initialize() {
+				//if(WB2.checkLogin()) sea_login();
+				make_widget();
+				sae_login();
+				/*
+				if(WB2.checkLogin()) {
+					$("#wb_connect_btn").text('å·²ç»ç™»å½•');
+				} else {
+					$("#wb_connect_btn").text('æœªç™»å½•');
+				}
+				$('#wb_connect_btn').click(function() {
+					if(WB2.checkLogin()) {
+						WB2.logout();	
+						
+						if(!WB2.checkLogin()) {
+							$("#wb_connect_btn").text("è¯·ç™»å½•");
+							chrome.extension.sendRequest({name: "logout_pop"});
+						}
+					} else {
+						WB2.login(function(o) {
+							$("#wb_connect_btn").text("å·²ç»ç™»å½•");
+							var cookie = CookieUtil.get('weibojs_'+CKEY);
+							var pattern = /access_token=([^&]+)/i;
+							var match = pattern.exec(cookie);
+							var access_token = match[1];
+							WB2.anyWhere(function(W) {
+								W.parseCMD("/users/show.json", function(sResult, bStatus) {
+									if(bStatus == true) {
+										console.log(sResult);
+									}
+								},{
+									'source': CKEY,
+									'access_token': access_token
+								},{
+									method: 'get'
+								});
+							});
+							chrome.extension.sendRequest({name: "login_pop"});
+						});
+					}
+				});*/
 				init();
 				Group.initGroup();
 				localStorage['pause'] = 'false';
@@ -137,12 +175,13 @@
 				chrome.extension.onRequest.addListener(function(request) {
 					if(request.name === 'login_bg') {
 						var elt = $('#wb_connect_btn div')[0];
+						console.log(elt);
 						fireEvent(elt, 'click');
-						chrome.extension.sendRequest({name: "login_pop"});
 					} else if (request.name == 'logout_bg') {
-						var elt = $('#wb_connect_btn .weibo_widget_connect_disconnect')[0];
-						fireEvent(elt, 'click');
-						chrome.extension.sendRequest({name: "logout_pop"});
+						//var elt = $('#wb_connect_btn .weibo_widget_connect_disconnect')[0];
+						WB2.logout();
+						make_widget();
+						//fireEvent(elt, 'click');
 					}
 				});
 
@@ -183,6 +222,7 @@
 					}
 				);
 				
+				/*
 				chrome.windows.onCreated.addListener(function() {
 					setTimeout(sync_data, 1000 * 10);
 				});
@@ -191,6 +231,7 @@
 					stopTime();
 					sync_data();
 				});
+				*/
 				
 				window.setInterval(updateCounter, updateCounterInterval);			
 				window.setInterval(checkIdleTime, 1000*10);
@@ -203,7 +244,7 @@
 			function stopTime() {
 				if(currentDomain != null && startTime != null) {
 					var delta = new Date().getTime() - startTime.getTime();
-					updateTime(currentDomain, parsetInt(delta / 1000));
+					updateTime(currentDomain, Math.round(delta / 1000));
 					// console.log('stop timer for: ' + currentDomain);
 					currentDomain = null;
 					startTime = null;
@@ -213,8 +254,8 @@
 			
 			window.onload = initialize;
 		</script>
-	</head>
+	</head>	
 	<body>
-		<span id="wb_connect_btn"></span>
+		<a id="wb_connect_btn"></a>
 	</body>
 </html>

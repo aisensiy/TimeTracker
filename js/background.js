@@ -175,7 +175,6 @@ var Group = {
 		var gs = JSON.parse(localStorage.time_tracker_group);
 		for(var i=0; i<gs[group].length; i++)
 			if(gs[group][i] == domain) {
-				console.log('domain ' + domain + ' is already in ' + group);
 				return true;
 			}
 		return false;
@@ -207,7 +206,7 @@ var Group = {
  */
 Date.date2str = function(date) {
 	var str = "";
-	str+=date.getFullYear()+"-" + (date.getMonth()+1) + "-" + date.getDate();
+	str+=date.getFullYear()+"-" + (date.getMonth()+1) + "-" + (100 + date.getDate()).toString().substring(1);
 	return str;
 };
 /**
@@ -619,22 +618,27 @@ function sync_data(callback) {
 	if(localStorage.login !== 'true') return;
 	var unsync = LS.get_unsync();
 	if(!unsync) LS.set_unsync({});
-	$.post(url_prefix + 'sync_data', {'unsync': JSON.stringify(unsync), 'sync': JSON.stringify(Statistics2.get_sync_timestamp())}, function(data) {
-		try {
-			data = JSON.parse(data);
-		} catch(e) {
-			callback && callback(false);
-			return;
-		}
-		if(!data.success) {
-			console.log('failed in upload data: ' + data.msg);
-			callback && callback(false);
-			return false;
-		}
-		update_sync(data.data);
-		LS.set_unsync({});
-		localStorage.last_update = '' + new Date().getTime();
-		callback && callback(true);
+	$.post(url_prefix + 'sync_data', 
+		{
+			'unsync': JSON.stringify(unsync), 
+			'sync': JSON.stringify(Statistics2.get_sync_timestamp())
+		}, 
+		function(data) {
+			try {
+				data = JSON.parse(data);
+			} catch(e) {
+				callback && callback(false);
+				return;
+			}
+			if(!data.success) {
+				console.log('failed in upload data: ' + data.msg);
+				callback && callback(false);
+				return false;
+			}
+			update_sync(data.data);
+			LS.set_unsync({});
+			localStorage.last_update = '' + new Date().getTime();
+			callback && callback(true);
 	}, "text");
 }
 

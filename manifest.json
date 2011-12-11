@@ -3,7 +3,7 @@
 	"description": "This extension track how much time you cost in every domain",
 	"icons": {"128": "icon.jpg", "48": "icon48.jpg"},
 	"version": "1.0",
-	"permissions": ["tabs", "https://*/*", "http://*/*"],
+	"permissions": ["tabs", "<all_urls>"],
 	"background_page": "background.html",
 	"browser_action": {
 		"default_title": "Browse Time Tracker",

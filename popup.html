@@ -4,11 +4,11 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<title>meetimer</title>
 		<link href="css/popup.css" rel="stylesheet" type="text/css" />
-		<link href="css/jquery-ui-1.8.13.custom.css" rel="stylesheet" type="text/css" />
+		<link href="css\jquery-ui.css" rel="stylesheet" type="text/css" />
 		<link href="http://js.t.sinajs.cn/t3//style/css/common/card.css?version=20110824" type="text/css" rel="stylesheet">
 		<script type="text/javascript" src="js/ls.js"></script>
 		<script type="text/javascript" src="js/jquery.js"></script>
-		<script type="text/javascript" src="js/jquery-ui-1.8.13.custom.min.js"></script>
+		<script type="text/javascript" src="js/jquery-ui.js"></script>
 		<script type="text/javascript" src="js/background.js"></script>
 		<script type="text/javascript" src="http://tjs.sjs.sinajs.cn/open/api/js/wb.js?appkey=3215313563"></script>
 		<script type="text/javascript">
@@ -75,23 +75,37 @@
 				$('#wb_connect_btn').remove();
 				var bgPage = chrome.extension.getBackgroundPage();
 				var btn = bgPage.document.getElementById('wb_connect_btn');
+				console.log(btn.innerHTML);
 				$(document.body).prepend($(btn).clone());
 			}
-			
+			var WB = chrome.extension.getBackgroundPage().WB2;
 			$(function() {
+				
 				chrome.extension.onRequest.addListener(function(request) {
-					if(request.name === 'login_pop' || request.name === 'logout_pop') {
-						alert('respone');
-						clone_wb_btn();
+					if(request.name === 'login_pop') {
+						$("#wb_connect_btn").text('退出');
+					} else if(request.name === 'logout_pop') {
+						$("#wb_connect_btn").html('<img src="css/images/240.png" />');
 					}
 				});
-				clone_wb_btn();
+				if(WB.checkLogin()) {
+					$("#wb_connect_btn").text('退出');
+				} else {
+					$("#wb_connect_btn").html('<img src="css/images/240.png" />');
+				}
+				//clone_wb_btn();
+				// login();
 				$('#wb_connect_btn').live('click', function(e) {
-					chrome.extension.sendRequest({name: "login_bg"});
+					// console.log(WB.checkLogin());
+					if(WB.checkLogin())  {
+						chrome.extension.sendRequest({name: "logout_bg"});
+						$("#wb_connect_btn").html('<img src="css/images/240.png" />');
+					}
+					else {
+						chrome.extension.sendRequest({name: "login_bg"});
+					}
 				});
-				$('#wb_connect_btn .weibo_widget_connect_disconnect').live('click', function(e) {
-					chrome.extension.sendRequest({name: "logout_bg"});
-				});
+				
 				$('#tabset').tabs();
 				fillGroupList();
 				//create group
@@ -203,48 +217,13 @@
 					});
 				});
 			});
-			function login() {
-				WB2.anyWhere(function(W) {
-					W.widget.connectButton({
-						id : "wb_connect_btn",
-						callback : {
-							login : function(o) {
-								console.log(o);
-								UID = o.id;
-								var cookie = CookieUtil.get('weibojs_'+CKEY);
-								var pattern = /access_token=([^&]+)/i;
-								var match = pattern.exec(cookie);
-								var access_token = match[1];
-								$.getJSON(url_prefix + 'wb_sess', 
-									{
-										client_id: CKEY,
-										access_token: access_token,
-										uid: UID
-									},
-									function(data) {
-										if(data.success) {
-											console.log('create session successfully!');
-											localStorage.login = 'true';
-											//chrome.extension.sendRequest({name: "login"});
-										}
-									}
-								);
-							},
-							logout : function() {
-								console.log('Log out!');
-								localStorage.login = 'false';
-								//chrome.extension.sendRequest({name: "logout"});
-							}
-						}
-					});
-				});
-			}
 		</script>
 		
 	</head>
 	<body>
-		<span id="wb_connect_btn">
-		</span>
+		<a id="wb_connect_btn">
+			<img src="css/images/240.png" />
+		</a>
 		<div class="container">
 			<div id="tabset">
 				<ul>

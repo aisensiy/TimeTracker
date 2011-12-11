@@ -1,12 +1,18 @@
+@charset: "UTF-8";
 br {
 	height: 0;
 	width: 0;
 	clear: both;
 }
 body {
-	min-width: 420px;
-	font-family: Arial, serif;
-	font-size: 15px;
+	font-family: "微软雅黑", Arial, sans-serif;
+	font-size: 13px;
+	line-height: 1.4;
+	margin: 0;
+	padding: 0;
+}
+.container {
+	min-width: 400px;
 }
 input[type=text] {
 	width: 5em;
