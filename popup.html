@@ -75,34 +75,52 @@
 				$('#wb_connect_btn').remove();
 				var bgPage = chrome.extension.getBackgroundPage();
 				var btn = bgPage.document.getElementById('wb_connect_btn');
-				console.log(btn.innerHTML);
 				$(document.body).prepend($(btn).clone());
 			}
 			var WB = chrome.extension.getBackgroundPage().WB2;
+			var sae_login = chrome.extension.getBackgroundPage().sae_login;
 			$(function() {
 				
 				chrome.extension.onRequest.addListener(function(request) {
 					if(request.name === 'login_pop') {
-						$("#wb_connect_btn").text('退出');
+						console.log(request.name);
+						clone_wb_btn();
 					} else if(request.name === 'logout_pop') {
+						console.log(request.name);
 						$("#wb_connect_btn").html('<img src="css/images/240.png" />');
 					}
 				});
+				/*
 				if(WB.checkLogin()) {
 					$("#wb_connect_btn").text('退出');
 				} else {
 					$("#wb_connect_btn").html('<img src="css/images/240.png" />');
 				}
-				//clone_wb_btn();
+				*/
+				clone_wb_btn();
 				// login();
 				$('#wb_connect_btn').live('click', function(e) {
 					// console.log(WB.checkLogin());
+					if(!WB.checkLogin()) {
+					    chrome.extension.sendRequest({name: "login_bg"});
+					}
+					/*
 					if(WB.checkLogin())  {
 						chrome.extension.sendRequest({name: "logout_bg"});
-						$("#wb_connect_btn").html('<img src="css/images/240.png" />');
-					}
-					else {
+						//$("#wb_connect_btn").html('<img src="css/images/240.png" />');
+						//clone_wb_btn();
+					} else {
 						chrome.extension.sendRequest({name: "login_bg"});
+					}
+					*/
+				});
+				$('.weibo_widget_connect_disconnect').live('click', function() {
+					console.log("done!!!");
+					console.log(this);
+					if(WB.checkLogin())  {
+						chrome.extension.sendRequest({name: "logout_bg"});
+						//$("#wb_connect_btn").html('<img src="css/images/240.png" />');
+						//clone_wb_btn();
 					}
 				});
 				
@@ -206,14 +224,21 @@
 				});
 				$('button[name="sync"]').click( function() {
 					$(this).addClass('loading');
-					sync_data(function(result) {
-						if(result) {
-							$('<p id="info" class="info">sync successfully!</p>').hide().insertBefore('#domain-list').slideDown(300).delay(1000).slideUp(300);
-							$('#time-selector select').change();
-						} else {
-							$('<p id="info" class="error">failed in sync, please sync sooner.</p>').hide().insertBefore('#domain-list').slideDown(300).delay(1000).slideUp(300);
-						}
-						$('button[name="sync"]').removeClass('loading');
+					$(document).queue(function() {
+					    sae_login(function() {$(document).dequeue();});
+					    console.log('login!')
+					});
+					$(document).queue(function() {
+					    sync_data(function(result) {
+						    if(result) {
+							    $('<p id="info" class="info">sync successfully!</p>').hide().insertBefore('#domain-list').slideDown(300).delay(1000).slideUp(300);
+							    $('#time-selector select').change();
+						    } else {
+							    $('<p id="info" class="error">failed in sync, please sync sooner.</p>').hide().insertBefore('#domain-list').slideDown(300).delay(1000).slideUp(300);
+						    }
+						    $('button[name="sync"]').removeClass('loading');
+						    $(document).dequeue();
+					    });
 					});
 				});
 			});

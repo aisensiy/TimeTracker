@@ -90,7 +90,7 @@
 			}
 			
 			
-			function sae_login() {
+			function sae_login(callback) {
 				if(!window.UID) return;
 				var match = /access_token=([^&]+)/i.exec(CookieUtil.get('weibojs_'+CKEY));
 				var access_token = match && match[1];
@@ -105,6 +105,7 @@
 							console.log('create session successfully!');
 							localStorage.login = 'true';
 							chrome.extension.sendRequest({name: "login"});
+							callback && callback();
 						}
 					}
 				);
@@ -118,10 +119,11 @@
 							login : function(o) {
 								UID = o.id;
 								sae_login();
+								setTimeout(function() {chrome.extension.sendRequest({name: "login_pop"});}, 500);
 							},
 							logout : function() {
 								localStorage.login = 'false';
-								chrome.extension.sendRequest({name: "logout"});
+								chrome.extension.sendRequest({name: "logout_pop"});
 							}
 						}
 					});
@@ -175,12 +177,12 @@
 				chrome.extension.onRequest.addListener(function(request) {
 					if(request.name === 'login_bg') {
 						var elt = $('#wb_connect_btn div')[0];
-						console.log(elt);
 						fireEvent(elt, 'click');
 					} else if (request.name == 'logout_bg') {
 						//var elt = $('#wb_connect_btn .weibo_widget_connect_disconnect')[0];
 						WB2.logout();
 						make_widget();
+						chrome.extension.sendRequest({name: "logout_pop"});
 						//fireEvent(elt, 'click');
 					}
 				});
@@ -237,7 +239,12 @@
 				window.setInterval(checkIdleTime, 1000*10);
 				window.setInterval(function() {
 					if(+new Date() - +localStorage.last_update < 1000 * 60 * 60) return;
-					sync_data();
+					$(document).queue(function() {
+					    sae_login(function() {$(document).dequeue();});
+					});
+					$(document).queue(function() {
+					    sync_data(function() {$(document).dequeue();});
+					});
 				}, 1000 * 60 * 10);
 			}
 			
