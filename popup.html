@@ -141,7 +141,7 @@
 					}
 				});
 				//delete group
-				$('button.delete').live('click', function() {
+				$('.delete').live('click', function() {
 					var unit = $(this).closest('li');
 					var name = unit.find('[type=text]').val();
 					unit.remove();
@@ -186,10 +186,14 @@
 				}).change();
 				$('ul#domain-list>li>span.group-name').live('click', function(event) {
 					$(this).nextAll('ul').toggle();
-					if($(this).nextAll('ul').is(':hidden'))
-						$(this).switchClass('up-arrow', 'down-arrow');
-					else
-						$(this).switchClass('down-arrow', 'up-arrow');
+					if($(this).nextAll('ul').is(':hidden')) {
+						$(this).removeClass('up-arrow');
+						$(this).addClass('down-arrow');
+					}
+					else {
+						$(this).removeClass('down-arrow');
+						$(this).addClass('up-arrow');
+	    				}
 				});
 				$('#domain-list>li>ul>li')
 				.live('mouseenter', function(event) {
@@ -224,10 +228,12 @@
 				});
 				$('button[name="sync"]').click( function() {
 					$(this).addClass('loading');
+					/*
 					$(document).queue(function() {
 					    sae_login(function() {$(document).dequeue();});
 					    console.log('login!')
 					});
+					*/
 					$(document).queue(function() {
 					    sync_data(function(result) {
 						    if(result) {
@@ -306,9 +312,7 @@
 				<button type="button" class='rename'>
 					rename
 				</button>
-				<button type="button" class='delete'>
-					X
-				</button>
+				<a href="#" class='delete' style="text-decoration: none;">x</a>
 			</li>
 		</ul>
 		<ul class='template group-checks'>

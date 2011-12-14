@@ -618,8 +618,13 @@ function sync_data(callback) {
 	if(localStorage.login !== 'true') return;
 	var unsync = LS.get_unsync();
 	if(!unsync) LS.set_unsync({});
+	var match = /access_token=([^&]+)/i.exec(CookieUtil.get('weibojs_'+CKEY));
+	var access_token = match && match[1];
 	$.post(url_prefix + 'sync_data', 
 		{
+			'uid': localStorage['UID'] || window.UID,
+			'client_id': CKEY,
+			'access_token': access_token,
 			'unsync': JSON.stringify(unsync), 
 			'sync': JSON.stringify(Statistics2.get_sync_timestamp())
 		}, 

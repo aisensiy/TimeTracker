@@ -117,7 +117,7 @@
 						id : "wb_connect_btn",
 						callback : {
 							login : function(o) {
-								UID = o.id;
+								localStorage['UID'] = UID = o.id;
 								sae_login();
 								setTimeout(function() {chrome.extension.sendRequest({name: "login_pop"});}, 500);
 							},
@@ -239,12 +239,7 @@
 				window.setInterval(checkIdleTime, 1000*10);
 				window.setInterval(function() {
 					if(+new Date() - +localStorage.last_update < 1000 * 60 * 60) return;
-					$(document).queue(function() {
-					    sae_login(function() {$(document).dequeue();});
-					});
-					$(document).queue(function() {
-					    sync_data(function() {$(document).dequeue();});
-					});
+					sync_data();
 				}, 1000 * 60 * 10);
 			}
 			
