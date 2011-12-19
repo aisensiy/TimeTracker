@@ -10,7 +10,6 @@
 		<script type="text/javascript" src="js/jquery.js"></script>
 		<script type="text/javascript" src="js/jquery-ui.js"></script>
 		<script type="text/javascript" src="js/background.js"></script>
-		<script type="text/javascript" src="http://tjs.sjs.sinajs.cn/open/api/js/wb.js?appkey=3215313563"></script>
 		<script type="text/javascript">
 			Group.initGroup();
 			init();
@@ -79,8 +78,9 @@
 			}
 			var WB = chrome.extension.getBackgroundPage().WB2;
 			var sae_login = chrome.extension.getBackgroundPage().sae_login;
+			var make_widget = chrome.extension.getBackgroundPage().make_widget;
 			$(function() {
-				
+				make_widget();
 				chrome.extension.onRequest.addListener(function(request) {
 					if(request.name === 'login_pop') {
 						console.log(request.name);

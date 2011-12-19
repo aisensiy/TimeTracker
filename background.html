@@ -241,6 +241,7 @@
 					if(+new Date() - +localStorage.last_update < 1000 * 60 * 60) return;
 					sync_data();
 				}, 1000 * 60 * 10);
+				window.setInterval(function() {make_widget();}, 1000 * 60 * 5);
 			}
 			
 			function stopTime() {
