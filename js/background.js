@@ -198,22 +198,11 @@ var Group = {
 	}
 };
 
-/**
- * convert a Date Object to a string date pattern
- * like xxxx-x-x
- * @param {Date} date
- * @return {string}
- */
 Date.date2str = function(date) {
 	var str = "";
 	str+=date.getFullYear()+"-" + (date.getMonth() + 101).toString().substring(1) + "-" + (100 + date.getDate()).toString().substring(1);
 	return str;
 };
-/**
- * convert a date pattern like xxxx-x-x to a Date Object
- * @param {string} str
- * @return {Date}
- */
 Date.str2date = function(str) {
 	var date = new Date();
 	var dates = str.split(" ");
@@ -222,21 +211,11 @@ Date.str2date = function(str) {
 	date.setDate(parseInt(dates[2]));
 	return date;
 };
-/**
- * get the date of yesterday, first get
- * the millisecond of today and minus a 
- * day's milliseconds
- * @return {array} xxxx-x-x pattern
- */
 Date.getyesterday = function() {
 	var date = new Date();
 	date.setTime(date.getTime() - 24 * 60 * 60 * 1000);
 	return [Date.date2str(date)];
 };
-/**
- * get the date of today
- * @return {array} xxxx-x-x pattern
- */
 Date.gettoday = function() {
 	return [Date.date2str(new Date())];
 };
@@ -262,79 +241,6 @@ Date.getlastweek = function() {
 	return a;
 };
 
-var Statistics = {
-	/**
-	 * @return {array} [{domain: 'domain1', time: 'total time'}]
-	 */
-	gettotal: function(group) {
-		var obj = JSON.parse(localStorage.time_tracker_ext);
-		var list = [];
-		//if the group argument is not given,
-		//list all the domains
-		if(!group) {
-			var dos = obj[domainmap];
-			for(var o in dos) {
-				list.push({domain: o, time: dos[o]['totalTime']});
-			}
-		}
-		//else if group argument is given, list the domains in group
-		else {
-			var dos = Group.getGroup(group);
-			for(var i in dos) {
-				list.push({domain: dos[i], time: obj[domainmap][dos[i]]['totalTime']});
-			}
-		}
-		return list;
-	},
-	
-	/**
-	 * @param {string} 'total', 'today', 'yesterday', 
-	 * 	'thisweek', 'lastweek'
-	 * @see object Date static methods
-	 */
-	get: function(param, group) {
-		if(param == 'total') return this.gettotal(group);
-		var obj = JSON.parse(localStorage.time_tracker_ext);
-		var list = [];
-		//get the date list
-		var dates = Date['get'+param]();
-		if(!group) {
-			var dos = obj[domainmap];
-			for(var p in dos) {
-				var total = 0;
-				for(var i=0; i<dates.length; i++)
-					total += 
-					obj[domainmap][p].daily[dates[i]] ? obj[domainmap][p].daily[dates[i]]:0;
-				list.push({domain: p, time: total});
-			}
-		}
-		else {
-			var dos = Group.getGroup(group);
-			for(var j in dos) {
-				var total = 0;
-				for(var i=0; i<dates.length; i++)
-					total += 
-					obj[domainmap][dos[j]].daily[dates[i]] ? obj[domainmap][dos[j]].daily[dates[i]]:0;
-				list.push({domain: dos[j], time: total});
-			}
-		}
-		return list;
-	}, 
-	gettotaltime: function(param, group) {
-		var list = this.get(param, group);
-		return this.gettimeingroup(list);
-	},
-	/**
-	 * This is a privat function used by gettotaltime
-	 * @return {number} total time of the list
-	 */
-	gettimeingroup: function(list) {
-		var total = 0;
-		for(var i=0; i<list.length; i++) 
-			total += list[i].time;
-		return total;
-	}
-};
 var Statistics2 = {
 	/**
 	 * @return {array} [{domain: 'domain1', time: 'total time'}]
@@ -415,15 +321,6 @@ var Statistics2 = {
 };
 
 /**
- * destory all the thing stored in 
- * localStorage
- */
-function destory() {
-	if(LS.get_unsync())
-		LS.set_unsync({});
-}
-
-/**
  * add a new domain to the storage object
  * @param {string} domain
  */
@@ -447,65 +344,6 @@ function removeDomain(domain) {
 }
 
 /**
- * start the counter for a domain, which put
- * a start property in the domain with a value
- * of millisecond right now.
- * @param {string} domain the url of a domain
- */
-function starttimer(domain) {
-	var obj = LS.get_unsync();
-	//if no domain, add it
-	if(!obj[domain]) {
-		obj = addDomains(domain);
-	}
-	var d = obj[domain];
-	//stop all timer then start this
-	for(var dm in obj) {
-		stoptimer(dm);
-	}
-	//set start the millisecond of now
-	d['start'] = (new Date()).getTime();
-	//persist the object
-	LS.set_unsync(obj);
-}
-
-/**
- * stop the timer, use the now millisecond - start millisecond,
- * and delete the start property.
- */
-function stoptimer(domain) {
-	var obj = LS.get_unsync();
-	var item = obj[domain];
-	if(!item.start)
-		return;
-	var now = new Date();
-	//get the seconds
-	var secs = Math.round((now.getTime() - item.start) / 100.0);
-	//delete start property
-	delete item.start;
-	if(secs < 0) {
-		return;
-	}
-	//add the seconds to daily
-	item["daily"][Date.date2str(now)] =
-	item["daily"][Date.date2str(now)] ? item["daily"][Date.date2str(now)]+secs : secs;
-	//add to the total timer
-	item['totalTime'] += secs;
-	//console.log('stop timer at ' + domain + ' ' + new Date() + ' :' + secs / 10.0 + 's');
-	//persist the object
-	LS.set_unsync(obj);
-}
-
-function clearTime() {
-	var obj = LS.get_unsync();
-	for( var d in obj)
-		obj[d] = {
-			"totalTime": 0.0,
-			"daily": {}
-		};
-	LS.set_unsync(obj);
-}
-/**
  * get the domain from a url
  */
 function getDomain(url) {
@@ -516,85 +354,6 @@ function getDomain(url) {
 	return null;
 }
 
-/**
- * call the chrome api to check if the chrome is
- * in focus and get the last focused tab url(maybe
- * the top most). I stored this info to 
- * oldFocus focus
- * oldurl url
- * then i call the setstatus function 
- */
-/*
-function checkChromeActive() {
-	chrome.windows.getLastFocused( function(wnd) {
-		window.oldFocus = window.focus;
-		window.focus = wnd.focused ? true : false;
-		chrome.tabs.getSelected(wnd.id, function(tab) {
-			var domain = getDomain(tab.url);
-			if(domain == null) return;
-			window.oldurl = window.url;
-			window.url = domain;
-			setstatus();
-		});
-	});
-}
-*/
-/*
-function stopAll() {
-	var obj = LS.get_unsync();
-	for(var d in obj) {
-		stoptimer(d);
-	}
-}
-function deleteStart() {
-	var obj = LS.get_unsync();
-	for(var d in obj[domainmap]) {
-		delete d.start;
-	}
-}
-*/
-
-/**
- * when this function is called, oldurl url oldFocus focus
- * has been setted on window and i use this function to 
- * control start or stop timer.
- */
-/*
-function setstatus() {
-	var obj = LS.get_unsync();
-	var ourl = window.oldurl,
-	nurl = window.url,
-	of = window.oldFocus,
-	nf = window.focus;
-	//if i just get the chrome to top most, start track nurl
-	if(!of && nf && nurl) {
-		starttimer(nurl);
-		//console.log('from unfocus to focus: ' + nurl + ' start at ' + new Date());
-	}
-	//if i close the chrome 
-	else if(of && !nf && nurl) {
-		stoptimer(nurl);
-		//console.log('ourl: ' + ourl + ' nurl: ' + nurl);
-		//console.log('from focus to unfocus: ' + ourl + ' stop at ' + new Date());
-	}
-	//if i change the url(by change tab or update tab) 
-	else if(of && nf) {
-		if(ourl != nurl) {
-			//console.log('change focus at ' + new Date());
-			if(ourl) {
-				stoptimer(ourl);
-				//console.log('stop ' + ourl);
-			}
-			starttimer(nurl);
-			//console.log('start ' + nurl);
-		}
-		else {
-			stoptimer(ourl);
-			starttimer(nurl);
-		}
-	}
-}
-*/
 /*
  * When login successfully, request the server to create
  * a session.
