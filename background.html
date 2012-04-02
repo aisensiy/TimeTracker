@@ -77,7 +77,9 @@
 				var obj = LS.get_unsync();
 				var item = obj[domain];
 				if(!item) {
-					obj = addDomains(domain);
+					obj[domain] = {
+            "total": 0.0
+          };
 					item = obj[domain];
 				}
 				var now = new Date();
@@ -131,11 +133,10 @@
 			}
 			function initialize() {
 				//if(WB2.checkLogin()) sea_login();
-				make_widget();
-				sae_login();
+				//make_widget();
+				//sae_login();
 				
 				init();
-				Group.initGroup();
 				localStorage['pause'] = 'false';
 				
 				chrome.extension.onRequest.addListener(function(request) {
@@ -188,24 +189,15 @@
 					}
 				);
 				
-				/*
-				chrome.windows.onCreated.addListener(function() {
-					setTimeout(sync_data, 1000 * 10);
-				});
-
-				chrome.windows.onRemoved.addListener(function(){
-					stopTime();
-					sync_data();
-				});
-				*/
-				
 				window.setInterval(updateCounter, updateCounterInterval);			
 				window.setInterval(checkIdleTime, 1000*10);
+				/*
 				window.setInterval(function() {
 					if(+new Date() - +localStorage.last_update < 1000 * 60 * 60) return;
 					sync_data();
 				}, 1000 * 60 * 10);
 				window.setInterval(function() {make_widget();}, 1000 * 60 * 5);
+				*/
 			}
 			
 			function stopTime() {

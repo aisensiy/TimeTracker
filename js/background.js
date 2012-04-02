@@ -94,10 +94,6 @@ function secs2format(secs) {
 }
 //group
 var Group = {
-	initGroup: function() {
-		if(!localStorage.time_tracker_group)
-			localStorage.time_tracker_group = JSON.stringify({});
-	},
 	getAllDomainGroups: function() {
 		var obj = JSON.parse(localStorage.time_tracker_ext), group = JSON.parse(localStorage.time_tracker_group);
 		var domains = {};
@@ -321,37 +317,15 @@ var Statistics2 = {
 };
 
 /**
- * add a new domain to the storage object
- * @param {string} domain
- */
-function addDomains(domain) {
-	var obj = LS.get_unsync();
-	obj[domain] = {
-		"total": 0.0
-	};
-	LS.set_unsync(obj);
-	return obj;
-}
-
-/**
- * delete the domain in the object
- * @param {string} domain
- */
-function removeDomain(domain) {
-	var obj = LS.get_unsync();
-	delete obj[domainmap][domain];
-	LS.set_unsync(obj);
-}
-
-/**
  * get the domain from a url
  */
 function getDomain(url) {
-	var urlRegexp = /^(\w+:\/\/\/?[^\/]+).*$/;
-	var match = url.match(urlRegexp);
-	if(match)
-		return match[1];
-	return null;
+	var match = /([^:]+):\/\/([^\/]*)\/?(\S*)/i.exec(url);
+	if(!match)
+		return 'invalid url';
+	if(/file/i.test(match[1]))
+		return 'localfile';
+	return match[2];
 }
 
 /*
@@ -414,6 +388,7 @@ function update_sync(data) {
 function init() {
 	if(!LS.get_sync()) LS.set_sync({});
 	if(!LS.get_unsync()) LS.set_unsync({});
+	if(!LS.get_group()) LS.set_group({});
 }
 
 function fireEvent(element,event){

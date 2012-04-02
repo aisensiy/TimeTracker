@@ -4,14 +4,11 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<title>meetimer</title>
 		<link href="css/popup.css" rel="stylesheet" type="text/css" />
-		<link href="css\jquery-ui.css" rel="stylesheet" type="text/css" />
 		<link href="http://js.t.sinajs.cn/t3//style/css/common/card.css?version=20110824" type="text/css" rel="stylesheet">
 		<script type="text/javascript" src="js/ls.js"></script>
 		<script type="text/javascript" src="js/jquery.js"></script>
-		<script type="text/javascript" src="js/jquery-ui.js"></script>
 		<script type="text/javascript" src="js/background.js"></script>
 		<script type="text/javascript">
-			Group.initGroup();
 			init();
 			//get all the group and show them in the list
 			function fillGroupList() {
@@ -90,13 +87,7 @@
 						$("#wb_connect_btn").html('<img src="css/images/240.png" />');
 					}
 				});
-				/*
-				if(WB.checkLogin()) {
-					$("#wb_connect_btn").text('退出');
-				} else {
-					$("#wb_connect_btn").html('<img src="css/images/240.png" />');
-				}
-				*/
+				
 				clone_wb_btn();
 				// login();
 				$('#wb_connect_btn').live('click', function(e) {
@@ -104,15 +95,7 @@
 					if(!WB.checkLogin()) {
 					    chrome.extension.sendRequest({name: "login_bg"});
 					}
-					/*
-					if(WB.checkLogin())  {
-						chrome.extension.sendRequest({name: "logout_bg"});
-						//$("#wb_connect_btn").html('<img src="css/images/240.png" />');
-						//clone_wb_btn();
-					} else {
-						chrome.extension.sendRequest({name: "login_bg"});
-					}
-					*/
+					
 				});
 				$('.weibo_widget_connect_disconnect').live('click', function() {
 					console.log("done!!!");
@@ -124,7 +107,7 @@
 					}
 				});
 				
-				$('#tabset').tabs();
+				//$('#tabset').tabs();
 				fillGroupList();
 				//create group
 				$('[name="createbtn"]').click( function(event) {
@@ -228,12 +211,6 @@
 				});
 				$('button[name="sync"]').click( function() {
 					$(this).addClass('loading');
-					/*
-					$(document).queue(function() {
-					    sae_login(function() {$(document).dequeue();});
-					    console.log('login!')
-					});
-					*/
 					$(document).queue(function() {
 					    sync_data(function(result) {
 						    if(result) {

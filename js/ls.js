@@ -1,16 +1,10 @@
 var LS = LS || {};
 (function(g){
-	/**
-	 * Get object from localStorage
-	 */
 	function get(item) {
 		if(!localStorage[item]) return null;
 		return JSON.parse(localStorage[item]);
 	}
 	
-	/**
-	 * Set object in localStorage
-	 */
 	function set(item, data) {
 		localStorage[item] = JSON.stringify(data);
 	}
@@ -32,4 +26,12 @@ var LS = LS || {};
 	}
 	g.get_unsync = get_unsync;
 	g.set_unsync = set_unsync;
+	function get_group() {
+		return get('hourglass_group');
+	}
+	function set_group(data) {
+		set('hourglass_group', data);
+	}
+	g.get_group = get_group;
+	g.set_group = set_group;
 })(LS);
