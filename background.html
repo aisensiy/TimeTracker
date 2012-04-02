@@ -133,43 +133,7 @@
 				//if(WB2.checkLogin()) sea_login();
 				make_widget();
 				sae_login();
-				/*
-				if(WB2.checkLogin()) {
-					$("#wb_connect_btn").text('已经登录');
-				} else {
-					$("#wb_connect_btn").text('未登录');
-				}
-				$('#wb_connect_btn').click(function() {
-					if(WB2.checkLogin()) {
-						WB2.logout();	
-						
-						if(!WB2.checkLogin()) {
-							$("#wb_connect_btn").text("请登录");
-							chrome.extension.sendRequest({name: "logout_pop"});
-						}
-					} else {
-						WB2.login(function(o) {
-							$("#wb_connect_btn").text("已经登录");
-							var cookie = CookieUtil.get('weibojs_'+CKEY);
-							var pattern = /access_token=([^&]+)/i;
-							var match = pattern.exec(cookie);
-							var access_token = match[1];
-							WB2.anyWhere(function(W) {
-								W.parseCMD("/users/show.json", function(sResult, bStatus) {
-									if(bStatus == true) {
-										console.log(sResult);
-									}
-								},{
-									'source': CKEY,
-									'access_token': access_token
-								},{
-									method: 'get'
-								});
-							});
-							chrome.extension.sendRequest({name: "login_pop"});
-						});
-					}
-				});*/
+				
 				init();
 				Group.initGroup();
 				localStorage['pause'] = 'false';

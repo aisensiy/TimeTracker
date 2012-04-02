@@ -206,7 +206,7 @@ var Group = {
  */
 Date.date2str = function(date) {
 	var str = "";
-	str+=date.getFullYear()+"-" + (date.getMonth()+1) + "-" + (100 + date.getDate()).toString().substring(1);
+	str+=date.getFullYear()+"-" + (date.getMonth() + 101).toString().substring(1) + "-" + (100 + date.getDate()).toString().substring(1);
 	return str;
 };
 /**
@@ -405,7 +405,6 @@ var Statistics2 = {
 			total += list[i].time;
 		return total;
 	},
-	
 	get_sync_timestamp: function() {
 		var dos = LS.get_sync(), map = {};
 		for(var url in dos) {
@@ -414,14 +413,6 @@ var Statistics2 = {
 		return map;
 	}
 };
-
-/**
- * init the localStorage object
- * here variable root is a global variable
- */
-// function initDomainStorage() {
-// 	
-// }
 
 /**
  * destory all the thing stored in 
@@ -533,6 +524,7 @@ function getDomain(url) {
  * oldurl url
  * then i call the setstatus function 
  */
+/*
 function checkChromeActive() {
 	chrome.windows.getLastFocused( function(wnd) {
 		window.oldFocus = window.focus;
@@ -546,6 +538,8 @@ function checkChromeActive() {
 		});
 	});
 }
+*/
+/*
 function stopAll() {
 	var obj = LS.get_unsync();
 	for(var d in obj) {
@@ -558,12 +552,14 @@ function deleteStart() {
 		delete d.start;
 	}
 }
+*/
 
 /**
  * when this function is called, oldurl url oldFocus focus
  * has been setted on window and i use this function to 
  * control start or stop timer.
  */
+/*
 function setstatus() {
 	var obj = LS.get_unsync();
 	var ourl = window.oldurl,
@@ -598,7 +594,7 @@ function setstatus() {
 		}
 	}
 }
-
+*/
 /*
  * When login successfully, request the server to create
  * a session.

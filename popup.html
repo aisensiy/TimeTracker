@@ -84,7 +84,7 @@
 				chrome.extension.onRequest.addListener(function(request) {
 					if(request.name === 'login_pop') {
 						console.log(request.name);
-						clone_wb_btn();
+						setTimeout(function() {clone_wb_btn();}, 500);
 					} else if(request.name === 'logout_pop') {
 						console.log(request.name);
 						$("#wb_connect_btn").html('<img src="css/images/240.png" />');
@@ -100,7 +100,7 @@
 				clone_wb_btn();
 				// login();
 				$('#wb_connect_btn').live('click', function(e) {
-					// console.log(WB.checkLogin());
+					console.log(WB.checkLogin());
 					if(!WB.checkLogin()) {
 					    chrome.extension.sendRequest({name: "login_bg"});
 					}
