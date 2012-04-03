@@ -11,13 +11,10 @@
 			var currentTabId = null;
 			var updateCounterInterval = 10 * 1000;
 			var lastActivitySeconds = 0;
-			//init();
-			//Group.initGroup();
 			function checkIdleTime(seconds) {
 				//console.log('Checking idle time.');
 				lastActivitySeconds += 10;
 				//console.log('Last activity was ' + lastActivitySeconds + ' seconds ago.');
-				//console.log('Paused = ' + localStorage['pause']);
 				if(localStorage['pause'] == 'false' && lastActivitySeconds > 60) 
 					pause();
 			}
