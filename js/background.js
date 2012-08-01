@@ -92,6 +92,48 @@ function secs2format(secs) {
 		's':parseInt(secs % 60)
 	};
 }
+Date.date2str = function(date) {
+	var str = "";
+	str+=date.getFullYear()+"-" + (date.getMonth() + 101).toString().substring(1) + "-" + (100 + date.getDate()).toString().substring(1);
+	return str;
+};
+Date.str2date = function(str) {
+	var date = new Date();
+	var dates = str.split(" ");
+	date.setFullYear(parseInt(dates[0]));
+	date.setMonth(parseInt(dates[1])-1);
+	date.setDate(parseInt(dates[2]));
+	return date;
+};
+Date.getyesterday = function() {
+	var date = new Date();
+	date.setTime(date.getTime() - 24 * 60 * 60 * 1000);
+	return [Date.date2str(date)];
+};
+Date.gettoday = function() {
+	return [Date.date2str(new Date())];
+};
+Date.getthisweek = function() {
+	var a = [];
+	var date = new Date();
+	do {
+		a.push(Date.date2str(date));
+		date.setTime(date.getTime() - 24 * 60 * 60 * 1000);
+	} while(date.getDay() != 0);
+	return a;
+};
+Date.getlastweek = function() {
+	var a = [];
+	var date = new Date();
+	do {
+		date.setTime(date.getTime() - 24 * 60 * 60 * 1000);
+	} while(date.getDay() != 0);
+	do {
+		a.push(Date.date2str(date));
+		date.setTime(date.getTime() - 24 * 60 * 60 * 1000);
+	} while(date.getDay() != 0);
+	return a;
+};
 //group
 var Group = {
 	getAllDomainGroups: function() {
@@ -194,48 +236,7 @@ var Group = {
 	}
 };
 
-Date.date2str = function(date) {
-	var str = "";
-	str+=date.getFullYear()+"-" + (date.getMonth() + 101).toString().substring(1) + "-" + (100 + date.getDate()).toString().substring(1);
-	return str;
-};
-Date.str2date = function(str) {
-	var date = new Date();
-	var dates = str.split(" ");
-	date.setFullYear(parseInt(dates[0]));
-	date.setMonth(parseInt(dates[1])-1);
-	date.setDate(parseInt(dates[2]));
-	return date;
-};
-Date.getyesterday = function() {
-	var date = new Date();
-	date.setTime(date.getTime() - 24 * 60 * 60 * 1000);
-	return [Date.date2str(date)];
-};
-Date.gettoday = function() {
-	return [Date.date2str(new Date())];
-};
-Date.getthisweek = function() {
-	var a = [];
-	var date = new Date();
-	do {
-		a.push(Date.date2str(date));
-		date.setTime(date.getTime() - 24 * 60 * 60 * 1000);
-	} while(date.getDay() != 0);
-	return a;
-};
-Date.getlastweek = function() {
-	var a = [];
-	var date = new Date();
-	do {
-		date.setTime(date.getTime() - 24 * 60 * 60 * 1000);
-	} while(date.getDay() != 0);
-	do {
-		a.push(Date.date2str(date));
-		date.setTime(date.getTime() - 24 * 60 * 60 * 1000);
-	} while(date.getDay() != 0);
-	return a;
-};
+
 
 var Statistics2 = {
 	/**
