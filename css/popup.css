@@ -6,7 +6,7 @@ br {
 }
 body {
 	font-family: "微软雅黑", Arial, sans-serif;
-	font-size: 13px;
+	font-size: 12px;
 	line-height: 1.4;
 	margin: 0;
 	padding: 0;
@@ -33,7 +33,7 @@ ul {
 	padding: 0;
 	list-style: none;
 }
-ul.group-checks {
+div.group-checks {
 	background-color: white;
 	position: absolute;
 	right: 1em;
@@ -41,11 +41,11 @@ ul.group-checks {
 	padding: 0.2em 2em 0.2em 0.2em;
 	border: 1px solid black;
 }
-ul.group-checks li {
+div.group-checks li {
 	color: black;
 	line-height: 1.2em;
 }
-ul.group-checks input[type=checkbox], ul.group-checks label {
+div.group-checks input[type=checkbox], div.group-checks label {
 	cursor: pointer;
 }
 ul#domain-list, ul#domain-list>li>ul {
