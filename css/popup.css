@@ -115,3 +115,28 @@ span.group-name {
 	padding-left: 18px;
 	background: url(images/load.gif) left center no-repeat;
 }
+.tab-header {
+	overflow: hidden;
+}
+.tab-header li {
+	float: left;
+}
+.tab-header li a,
+.tab-header li a:visited {
+	text-decoration: none;
+	color: black;
+	display: block;
+	padding: 5px;
+	width: 5em;
+	text-align: center;
+	background-color: silver;
+}
+.tab-header li a:hover,
+.tab-header li a.active {
+	background-color: #ddd;
+}
+
+#tabset > div {
+	background-color: #ddd;
+	padding: 5px;
+}

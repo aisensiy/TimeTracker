@@ -66,54 +66,12 @@
 			$('#group div:first-child .error').remove();
 		}
 
-		function clone_wb_btn() {
-			$('#wb_connect_btn').remove();
-			var bgPage = chrome.extension.getBackgroundPage();
-			var btn = bgPage.document.getElementById('wb_connect_btn');
-			$(document.body).prepend($(btn).clone());
-		}
-
-		var WB = chrome.extension.getBackgroundPage().WB2;
-		var sae_login = chrome.extension.getBackgroundPage().sae_login;
-		var make_widget = chrome.extension.getBackgroundPage().make_widget;
 		$(function() {
-			make_widget();
-			chrome.extension.onRequest.addListener(function(request) {
-				if(request.name === 'login_pop') {
-					console.log(request.name);
-					setTimeout(function() {
-						clone_wb_btn();
-					}, 500);
-				} else if(request.name === 'logout_pop') {
-					console.log(request.name);
-					$("#wb_connect_btn").html('<img src="css/images/240.png" />');
-				}
-			});
-			clone_wb_btn();
-			// login();
-			$('#wb_connect_btn').live('click', function(e) {
-				console.log(WB.checkLogin());
-				if(!WB.checkLogin()) {
-					chrome.extension.sendRequest({
-						name : "login_bg"
-					});
-				}
-
-			});
-			$('.weibo_widget_connect_disconnect').live('click', function() {
-				console.log("done!!!");
-				console.log(this);
-				if(WB.checkLogin()) {
-					chrome.extension.sendRequest({
-						name : "logout_bg"
-					});
-					//$("#wb_connect_btn").html('<img src="css/images/240.png" />');
-					//clone_wb_btn();
-				}
-			});
 			function tabs(container) {
 			  $('li', $(container).children('ul')).click(function() {
 			    var $a = $(this).find('a');
+			    $(this).closest('ul').find('a').removeClass('active');
+			    $a.addClass('active');
 			    $(container).children('div').hide();
 			    $($a.attr('href')).show();
 			  });
@@ -245,10 +203,9 @@
     </script>
   </head>
   <body>
-    <a id="wb_connect_btn"> <img src="css/images/240.png" /> </a>
     <div class="container">
       <div id="tabset">
-        <ul>
+        <ul class='tab-header'>
           <li>
             <a href="#show-lists">时间列表</a>
           </li>
