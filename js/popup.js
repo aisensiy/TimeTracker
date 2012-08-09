@@ -1,17 +1,16 @@
-init();
 //get all the group and show them in the list
 function fillGroupList() {
-	var groups = Group.getGroupArray();
+    "use strict";
+	var groups = Group.getGroupArray(), i;
 	$('#groups').empty();
-	for(var i = 0; i < groups.length; i++) {
+	for(i = 0; i < groups.length; i++) {
 		var val = groups[i];
 		$("ul.template.groups-list").children().clone().appendTo('#groups').find('input[type=text]').val(val).data('oldname', val);
 	}
 }
 
 function fillGroupedList(list, groupName, grouped) {
-	if(list.length == 0)
-		return;
+	if(list.length == 0) return;
 	list.sort(createComparisonFunction('time'));
 	var totaltime = Statistics2.gettimeingroup(list);
 	$('ul.template.domain-list').children().clone().addClass(groupName).appendTo('#domain-list').find('span.group-name').text(groupName).end().find('span.group-time').text(formattime(totaltime));

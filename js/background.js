@@ -64,6 +64,7 @@ function init() {
 	if(!LS.get_sync()) LS.set_sync({});
 	if(!LS.get_unsync()) LS.set_unsync({});
 	if(!LS.get_group()) LS.set_group({});
+	if(!localStorage.time_tracker_group) localStorage.time_tracker_group = '{}';
 }
 
 var currentDomain = null;
@@ -135,8 +136,8 @@ function updateTime(domain, seconds) {
 	var item = obj[domain];
 	if(!item) {
 		obj[domain] = {
-"total": 0.0
-};
+            "total": 0.0
+        };
 		item = obj[domain];
 	}
 	var now = new Date();
@@ -268,4 +269,4 @@ function stopTime() {
 	}
 }
 
-window.onload = initialize;
+initialize();
