@@ -8,6 +8,7 @@
 		"page": "background.html"
 	},
 	"manifest_version": 2,
+	"options_page": "options.html",
 	"browser_action": {
 		"default_title": "Hourglass",
 		"default_icon": "icon.jpg",
